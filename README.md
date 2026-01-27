@@ -1,60 +1,91 @@
-# TestOpenCVjs - Pipeline Xử Lý Ảnh với OpenCV.js
+# TestOpenCVjs - Visual Image Processing Pipeline
 
-Ứng dụng web đơn giản để thực nghiệm và xử lý ảnh hàng loạt ngay trên trình duyệt sử dụng thư viện **OpenCV.js**. Ứng dụng hiển thị trực quan các bước biến đổi của ảnh qua từng giai đoạn trong pipeline.
+[Tiếng Việt](./README_VN.md) | [English](./README.md)
+
+A lightweight web application for experimenting with batch image processing using **OpenCV.js**. It provides a visual representation of each transformation step in a pipeline, making it ideal for debugging computer vision algorithms like Captcha solving or document processing.
 
 **🌐 Live Demo:** [https://vuquan2005.github.io/TestOpenCVjs/](https://vuquan2005.github.io/TestOpenCVjs/)
 
-## 🚀 Tính Năng
+## 🚀 Key Features
 
-- **Xử lý hàng loạt (Batch Processing)**: Áp dụng cùng một chuỗi xử lý cho nhiều ảnh cùng lúc.
-- **Pipeline Trực Quan**: Hiển thị kết quả của từng bước xử lý theo từng hàng (Row), giúp dễ dàng so sánh và debug.
-- **Đầu vào linh hoạt**:
-    - Tự động tải danh sách ảnh mẫu mặc định (`img/`).
-    - Cho phép tải lên ảnh từ máy tính (nút "Choose Files").
-- **Quản lý bộ nhớ**: Tự động giải phóng bộ nhớ (Mat cleanup) sau mỗi bước để tối ưu hiệu năng.
+- **Batch Processing**: Apply a sequence of OpenCV operations to multiple images simultaneously.
+- **Visual Pipeline**: Displays results of every processing step in rows, allowing side-by-side comparison across images.
+- **Auto-Processing**: Automatically triggers processing upon page load (using default samples) or when new files are selected.
+- **Memory Management**: Automatic cleanup of OpenCV `Mat` objects after each step to prevent memory leaks in the browser.
+- **Flexible Input**:
+    - Loads sample images from the `img/` directory by default.
+    - Supports local file uploads via a custom file picker.
+- **Final Results Modal**: A "View Results" button to inspect the final output of the entire pipeline in a clean grid layout.
+- **Interactive UI**: Expandable/collapsible step titles with detailed information.
 
-## 📦 Cài Đặt và Chạy
+## 📦 Getting Started
 
-Dự án không yêu cầu cài đặt backend phức tạp, chỉ cần một static server.
+The project is purely client-side; you only need a simple static web server to run it.
 
-### Cách 1: Sử dụng `npx` (Khuyên dùng)
+### Prerequisites
 
-Nếu bạn đã cài Node.js, hãy chạy lệnh sau tại thư mục gốc của dự án:
+- [Node.js](https://nodejs.org/) (for `npx http-server`) OR [Python](https://www.python.org/)
 
-```bash
-npx http-server -c-1
-```
+### Running Locally
 
-Sau đó mở trình duyệt và truy cập vào địa chỉ được hiển thị (thường là `http://127.0.0.1:8080/example.html`).
+1. **Clone the repository:**
 
-### Cách 2: Python
+    ```bash
+    git clone https://github.com/vuquan2005/TestOpenCVjs.git
+    cd TestOpenCVjs
+    ```
 
-Nếu bạn sử dụng Python:
+2. **Start a server:**
 
-```bash
-# Python 3
-python -m http.server 8000
-```
+    **Using `npx` (Recommended):**
 
-Truy cập: `http://localhost:8000/example.html`
+    ```bash
+    npx http-server -c-1
+    ```
 
-## 📂 Cấu Trúc Thư Mục
+    **Using Python:**
 
-- **`example.html`**: Giao diện chính của ứng dụng.
-- **`script.js`**: Logic cốt lõi (tải ảnh, quản lý bộ nhớ, vẽ UI).
-- **`pipeline_steps.js`**: Định nghĩa các bước xử lý ảnh trong pipeline (Nơi bạn thêm/sửa logic OpenCV).
-- **`opencv.js`**: Thư viện OpenCV phiên bản WebAssembly.
-- **`img/`**: Thư mục chứa các ảnh mẫu.
+    ```bash
+    python -m http.server 8000
+    ```
 
-## 📝 Cách Thêm Bước Xử Lý Mới
+3. **Access the app:**
+   Open your browser and navigate to `http://localhost:8080` (or the port specified by your server).
 
-Mở file `pipeline_steps.js` và thêm một block `processBatchStep` mới:
+## 📂 Project Structure
+
+- **`index.html`**: The main entry point and UI layout.
+- **`style.css`**: Premium, modern styling for the pipeline and controls.
+- **`script.js`**: Core logic for image loading, pipeline management, and memory handling.
+- **`pipeline_steps.js`**: The configuration file where processing steps are defined (e.g., HSV conversion, Thresholding).
+- **`opencv.js`**: OpenCV library compiled to WebAssembly (WASM).
+- **`img/`**: Directory containing sample images for default processing.
+
+## 📝 Customizing the Pipeline
+
+You can easily modify or add new processing steps in `pipeline_steps.js`. Each step is defined using the `processBatchStep` function:
 
 ```javascript
-processBatchStep("Tên Bước Mới", (src) => {
+processBatchStep("Step Name", (src) => {
     let dst = new cv.Mat();
-    // Logic xử lý OpenCV của bạn, ví dụ: Threshold
-    cv.threshold(src, dst, 177, 200, cv.THRESH_BINARY);
-    return dst; // Trả về kết quả để dùng cho bước sau
+    // Your OpenCV logic here
+    cv.cvtColor(src, dst, cv.COLOR_RGB2GRAY);
+    return dst; // Return the resulting Mat for the next step
 });
 ```
+
+### Current Pipeline Example (Captcha Processing)
+
+The default `pipeline_steps.js` includes a robust sequence for cleaning noisy text:
+
+1. **HSV Conversion**: Better color segmentation.
+2. **Channel Selection**: Extracting the Saturation channel to highlight text.
+3. **Median Blur**: Removing "salt and pepper" noise.
+4. **Otsu Thresholding**: Optimal binarization.
+5. **Blob Removal**: Custom contour filtering to remove remaining small noise particles.
+6. **Morphological Closing**: Joining broken character segments.
+7. **Bitwise Not**: Inverting for standard black-on-white output.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

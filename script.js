@@ -8,18 +8,46 @@ const DEFAULT_IMAGES = [
     'img/3.jpg',
     'img/4.jpg',
     'img/5.jpg',
-    'img/6.jpg',
-    'img/7.jpg'
+    'img/6.jpg'
 ];
 
 const pipelineContainer = document.getElementById('pipeline-container');
 const btnProcess = document.getElementById('btnProcess');
+const btnViewResult = document.getElementById('btnViewResult');
 const fileInput = document.getElementById('fileInput');
 
-// Khi chọn file, bật nút xử lý
+// Modal Elements
+const modal = document.getElementById("resultModal");
+const closeModalSpan = document.getElementsByClassName("close-modal")[0];
+const resultGrid = document.getElementById("resultGrid");
+
+// Khi chọn file, tự động kích hoạt xử lý
 fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) btnProcess.disabled = false;
+    if (fileInput.files.length > 0) {
+        btnProcess.disabled = false;
+        // Kiểm tra xem OpenCV đã sẵn sàng chưa trước khi tự động chạy
+        if (typeof cv !== 'undefined' && cv.getBuildInformation) {
+            btnProcess.click();
+        } else {
+            console.log("OpenCV is not ready, please wait...");
+        }
+    }
 });
+
+// Xử lý nút View Result
+btnViewResult.addEventListener('click', () => {
+    showFinalResult();
+});
+
+// Xử lý đóng Modal
+closeModalSpan.onclick = function () {
+    modal.style.display = "none";
+}
+window.onclick = function (event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
 
 // Phần xử lý sự kiện 'click' của btnProcess đã được chuyển sang file pipeline_steps.js
 // để dễ dàng quản lý các bước xử lý ảnh.
@@ -32,7 +60,9 @@ function loadAllImages(files) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.src = URL.createObjectURL(file);
-            img.onload = () => resolve({ img: img, name: file.name });
+            // Xóa phần mở rộng file
+            const name = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+            img.onload = () => resolve({ img: img, name: name });
             img.onerror = reject;
         });
     });
@@ -45,8 +75,9 @@ function loadImagesFromUrls(urls) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.src = url;
-            // Lấy tên file từ URL để hiển thị
-            const name = url.split('/').pop();
+            // Lấy tên file từ URL và xóa phần mở rộng
+            let name = url.split('/').pop();
+            name = name.substring(0, name.lastIndexOf('.')) || name;
             img.onload = () => resolve({ img: img, name: name });
             img.onerror = reject;
         });
@@ -56,7 +87,7 @@ function loadImagesFromUrls(urls) {
 
 // Tạo giao diện cho Hàng 1 và khởi tạo dữ liệu OpenCV
 function initFirstRow(loadedImages) {
-    const track = createStepRow("Ảnh gốc");
+    const track = createStepRow("Original Images");
 
     loadedImages.forEach((item, index) => {
         // 1. Hiển thị UI
@@ -124,6 +155,39 @@ function processBatchStep(stepName, processCallback) {
     currentMats = nextMats;
 }
 
+// Hàm hiển thị kết quả cuối cùng lên Modal Grid
+function showFinalResult() {
+    if (!currentMats || currentMats.length === 0) {
+        alert("No results to display!");
+        return;
+    }
+
+    resultGrid.innerHTML = ''; // Clear cũ
+
+    currentMats.forEach((mat, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-item';
+
+        const canvas = document.createElement('canvas');
+        const canvasId = `modal-cv-${index}-${Date.now()}`;
+        canvas.id = canvasId;
+
+        wrapper.appendChild(canvas);
+
+        const label = document.createElement('div');
+        label.className = 'image-label';
+        label.innerText = fileNames[index] || `Image ${index + 1}`;
+        wrapper.appendChild(label);
+
+        resultGrid.appendChild(wrapper);
+
+        // Vẽ Mat lên Canvas (cần clone hoặc vẽ trực tiếp, ở đây dùng imshow vẽ trực tiếp)
+        cv.imshow(canvasId, mat);
+    });
+
+    modal.style.display = "block";
+}
+
 // Hàm tạo khung HTML cho một hàng
 function createStepRow(titleText) {
     const rowDiv = document.createElement('div');
@@ -132,8 +196,39 @@ function createStepRow(titleText) {
     const title = document.createElement('div');
     title.className = 'step-title';
 
-    title.innerHTML = 'ℹ️';
+    // Nút toggle chi tiết
+    const infoBtn = document.createElement('button');
+    infoBtn.className = 'step-info-btn';
+    infoBtn.innerHTML = 'ℹ️';
+    infoBtn.title = "Click to toggle all title details";
+
+    // Hàm thực hiện toggle cho tất cả
+    const toggleAll = (e) => {
+        if (e) e.stopPropagation();
+        const isCurrentlyExpanded = title.classList.contains('expanded');
+        const allTitles = document.querySelectorAll('.step-title');
+        allTitles.forEach(t => {
+            if (isCurrentlyExpanded) t.classList.remove('expanded');
+            else t.classList.add('expanded');
+        });
+    };
+
+    infoBtn.onclick = toggleAll;
+    title.onclick = toggleAll; // Cho phép nhấn vào vùng tiêu đề để toggle
+    title.appendChild(infoBtn);
+
+    // Mặc định luôn mở rộng để dễ nhìn
+    title.classList.add('expanded');
+
+    // Lưu data-title để CSS tooltip dùng
     title.setAttribute('data-title', titleText);
+
+    // Tạo span chứa text để hiện khi expanded
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'title-text';
+    titleSpan.innerText = titleText;
+    title.appendChild(titleSpan);
+
     rowDiv.appendChild(title);
 
     const trackDiv = document.createElement('div');
@@ -147,10 +242,10 @@ function createStepRow(titleText) {
 var Module = {
     onRuntimeInitialized() {
         const status = document.getElementById('status');
-        status.innerText = '🟢 OpenCV.js (Sẵn sàng)';
+        status.innerText = '🟢';
         status.style.color = 'green';
 
-        // Bật nút xử lý vì luôn có ảnh default
+        // Luôn bật nút xử lý để có thể chạy lại
         btnProcess.disabled = false;
 
         // Tự động chạy với ảnh default khi mới vào

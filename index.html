@@ -9,15 +9,29 @@
 
 <body>
     <div class="header-compact">
-        <h2>Pipeline OpenCV</h2>
-        <button id="btnProcess" disabled>Xử lý</button>
-        <input type="file" id="fileInput" multiple accept="image/*" />
+        <h2>OpenCV Test <span id="status">🟠</span></h2>
+        <button id="btnProcess" class="btn-primary" title="Rerun"><span class="icon-spin">🔄</span></button>
+        <label for="fileInput" class="btn-primary btn-upload">
+            <span>📁 Select Images</span>
+            <input type="file" id="fileInput" multiple accept="image/*" />
+        </label>
         <div class="controls-inline">
-            <span id="status">🟠 Đang tải...</span>
+            <button id="btnViewResult" class="btn-primary">View Results</button>
         </div>
     </div>
 
     <div id="pipeline-container"></div>
+
+    <!-- Full Screen Result Modal -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Final Results</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div id="resultGrid" class="result-grid"></div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
     <script src="pipeline_steps.js"></script>

@@ -61,35 +61,42 @@ btnProcess.addEventListener('click', async () => {
 
         cv.findContours(src, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-        // BƯỚC 1: Tìm kích thước của vật thể lớn nhất (Max Area) để làm chuẩn
+        // 1. Tìm Max Area
         let maxArea = 0;
         for (let i = 0; i < contours.size(); i++) {
             let area = cv.contourArea(contours.get(i));
-            if (area > maxArea) {
-                maxArea = area;
-            }
+            if (area > maxArea) maxArea = area;
         }
 
-        // BƯỚC 2: Thiết lập ngưỡng động
-        // Chữ cái thường có kích thước tương đồng nhau.
-        // Nhiễu thường nhỏ hơn hẳn. Lấy 20% của maxArea là ngưỡng an toàn.
-        let dynamicThreshold = maxArea * 0.2;
-
-        // Đặt một mức sàn tối thiểu để tránh xóa nhầm dấu chấm chữ 'i' nếu ảnh quá sạch
-        if (dynamicThreshold < 100) dynamicThreshold = 100;
+        // Giảm ngưỡng an toàn xuống chút (0.2 -> 0.15) để đỡ xóa nhầm
+        let dynamicThreshold = maxArea * 0.15;
+        if (dynamicThreshold < 80) dynamicThreshold = 80; // Sàn tối thiểu
 
         for (let i = 0; i < contours.size(); i++) {
             let c = contours.get(i);
             let area = cv.contourArea(c);
             let rect = cv.boundingRect(c);
-            let height = rect.height;
 
-            // Điều kiện lọc:
-            // 1. Diện tích nhỏ hơn ngưỡng động
-            // 2. HOẶC Chiều cao quá thấp (giữ nguyên logic cũ nhưng giảm nhẹ xuống 10)
-            if (area < dynamicThreshold || height < 10) {
+            let height = rect.height;
+            let width = rect.width;
+
+            // Tính tỷ lệ khung hình (Chiều rộng / Chiều cao)
+            let aspectRatio = width / height;
+
+            // --- CÁC ĐIỀU KIỆN ---
+
+            // 1. Nó có phải là rác không? (Nhỏ HOẶC Lùn)
+            let isTrash = (area < dynamicThreshold) || (height < 10);
+
+            // 2. NGOẠI LỆ: "Cơ chế bảo vệ người gầy" (Quan trọng cho chữ i, l, 1)
+            // Nếu nó đủ cao (> 12px) VÀ nó thon dài (ratio < 0.4) -> Đừng xóa!
+            let isSkinnyChar = (height > 12) && (aspectRatio < 0.4);
+
+            // Logic: Nếu là rác VÀ KHÔNG PHẢI là chữ gầy -> Xóa
+            if (isTrash && !isSkinnyChar) {
                 cv.drawContours(dst, contours, i, new cv.Scalar(0), -1);
             }
+
             c.delete();
         }
 
@@ -116,58 +123,10 @@ btnProcess.addEventListener('click', async () => {
         return dst;
     });
 
+    processBatchStep("bitwise not", (src) => {
+        let dst = new cv.Mat();
+        cv.bitwise_not(src, dst);
+        return dst;
+    });
 
-
-    // processBatchStep("morphologyEx", (src) => {
-    //     let dst = new cv.Mat();
-    //     let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(2, 2));
-    //     cv.morphologyEx(src, dst, cv.MORPH_OPEN, kernel);
-    //     return dst;
-    // });
-
-    // // processBatchStep("blur 2", (src) => {
-    // //     let dst = new cv.Mat();
-    // //     cv.medianBlur(src, dst, 3);
-    // //     return dst;
-    // // });
-
-    // processBatchStep("adaptiveThreshold", (src) => {
-    //     let dst = new cv.Mat();
-    //     cv.adaptiveThreshold(
-    //         src,
-    //         dst,
-    //         255,
-    //         cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-    //         cv.THRESH_BINARY,
-    //         9,
-    //         1
-    //     );
-    //     return dst;
-    // });
-
-
-    // processBatchStep("findContours", (src) => {
-    //     let contours = new cv.MatVector();
-    //     let hierarchy = new cv.Mat();
-    //     cv.findContours(
-    //         src,
-    //         contours,
-    //         hierarchy,
-    //         cv.RETR_EXTERNAL,
-    //         cv.CHAIN_APPROX_SIMPLE
-    //     );
-    //     let mask = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC1);
-
-    //     for (let i = 0; i < contours.size(); i++) {
-    //         let cnt = contours.get(i);
-    //         let area = cv.contourArea(cnt);
-
-    //         if (area > 40 && area < 500) {
-    //             cv.drawContours(mask, contours, i, new cv.Scalar(255), -1);
-    //         }
-
-    //         cnt.delete();
-    //     }
-    //     return mask;
-    // });
 });

@@ -2,6 +2,8 @@
 
 Ứng dụng web đơn giản để thực nghiệm và xử lý ảnh hàng loạt ngay trên trình duyệt sử dụng thư viện **OpenCV.js**. Ứng dụng hiển thị trực quan các bước biến đổi của ảnh qua từng giai đoạn trong pipeline.
 
+**🌐 Live Demo:** [https://vuquan2005.github.io/TestOpenCVjs/](https://vuquan2005.github.io/TestOpenCVjs/)
+
 ## 🚀 Tính Năng
 
 - **Xử lý hàng loạt (Batch Processing)**: Áp dụng cùng một chuỗi xử lý cho nhiều ảnh cùng lúc.

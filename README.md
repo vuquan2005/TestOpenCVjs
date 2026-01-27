@@ -22,7 +22,7 @@ Dự án không yêu cầu cài đặt backend phức tạp, chỉ cần một s
 Nếu bạn đã cài Node.js, hãy chạy lệnh sau tại thư mục gốc của dự án:
 
 ```bash
-npx http-server
+npx http-server -c-1
 ```
 
 Sau đó mở trình duyệt và truy cập vào địa chỉ được hiển thị (thường là `http://127.0.0.1:8080/example.html`).

@@ -1,0 +1,179 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 10px;
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Header Compact: Gom H2, Status, Controls vào 1 hàng ngang */
+.header-compact {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 5px 10px;
+    background: #f0f2f5;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.header-compact h2 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #333;
+    white-space: nowrap;
+    padding-right: 15px;
+    border-right: 1px solid #ccc;
+}
+
+.header-compact #status {
+    margin: 0;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #f0ad4e;
+    /* Màu vàng cam */
+    white-space: nowrap;
+    padding-left: 0;
+    padding-right: 15px;
+}
+
+.header-compact .controls-inline {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+    align-items: center;
+}
+
+.header-compact input[type="file"] {
+    font-size: 0.9em;
+    max-width: 200px;
+}
+
+.header-compact button {
+    padding: 3px 10px;
+    cursor: pointer;
+}
+
+/* Container chính */
+#pipeline-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* Một hàng (Bước xử lý) */
+.step-row {
+    border: 1px solid #eaeaea;
+    padding: 2px 5px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 110px;
+    overflow: hidden;
+}
+
+/* STEP TITLE (Cột tiêu đề bên trái) */
+.step-title {
+    /* Reset các xoay chiều cũ */
+    writing-mode: horizontal-tb;
+    transform: none;
+
+    font-size: 1.2em;
+    /* Icon to hơn chút */
+    cursor: help;
+    /* Cursor hỏi chấm */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    /* Cố định chiều rộng cột */
+    border-right: 1px solid #eee;
+    /* Đường ngăn cách với ảnh */
+    margin-right: 5px;
+    color: #007bff;
+    position: relative;
+    /* Để định vị tooltip */
+}
+
+/* Tooltip hiệu ứng */
+.step-title:hover:after {
+    content: attr(data-title);
+    position: absolute;
+    left: 100%;
+    /* Hiện bên phải icon */
+    top: 50%;
+    transform: translateY(-50%);
+    background: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.9em;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    margin-left: 10px;
+    /* Cách icon một chút */
+}
+
+/* Tam giác nhỏ chỉ vào icon */
+.step-title:hover:before {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #333 transparent transparent;
+    /* Mũi tên hướng trái */
+    margin-left: 0px;
+    /* Sát icon */
+}
+
+/* Khu vực chứa các ảnh - Xếp ngang */
+.images-track {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1;
+    align-items: center;
+    height: 100%;
+}
+
+.images-track::-webkit-scrollbar {
+    height: 7px;
+}
+
+.images-track::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.images-track::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+/* Từng ô ảnh */
+.image-item {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-item canvas,
+.image-item img {
+    height: 100px;
+    width: auto;
+    border: 1px solid #eee;
+    background: #fff;
+    object-fit: contain;
+}
+
+.image-label {
+    display: none;
+}

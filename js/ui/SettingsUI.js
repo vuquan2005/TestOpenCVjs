@@ -58,6 +58,7 @@ export class SettingsUI {
         };
 
         require(["vs/editor/editor.main"], () => {
+            const isMobile = window.innerWidth <= 768;
             this.editor = monaco.editor.create(this.monacoContainer, {
                 value: "",
                 language: "javascript",
@@ -68,6 +69,8 @@ export class SettingsUI {
                 lineNumbersMinChars: 2,
                 lineDecorationsWidth: 7,
                 folding: false,
+                fontSize: isMobile ? 12 : 13,
+                wordWrap: isMobile ? "on" : "off",
             });
         });
     }

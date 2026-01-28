@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 10px;
@@ -81,6 +85,12 @@ body.modal-open #master-scrollbar-container {
     margin-left: auto;
 }
 
+.header-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .btn-upload {
     position: relative;
     overflow: hidden;
@@ -93,17 +103,11 @@ body.modal-open #master-scrollbar-container {
 
 .btn-upload input[type="file"] {
     position: absolute;
-    top: 0;
-    right: 0;
-    min-width: 100%;
-    min-height: 100%;
-    font-size: 100px;
-    text-align: right;
-    filter: alpha(opacity=0);
+    width: 0.1px;
+    height: 0.1px;
     opacity: 0;
-    outline: none;
-    cursor: inherit;
-    display: block;
+    overflow: hidden;
+    z-index: -1;
 }
 
 .btn-primary,
@@ -122,8 +126,8 @@ body.modal-open #master-scrollbar-container {
     justify-content: center;
     white-space: nowrap;
     vertical-align: middle;
-    margin-right: 5px;
     font-size: 13px;
+    gap: 6px;
 }
 
 .btn-primary {
@@ -346,7 +350,6 @@ body.modal-open #master-scrollbar-container {
     border-radius: 4px;
     font-size: 1rem;
     width: 100%;
-    box-sizing: border-box;
 }
 
 #stepNameInput:focus {
@@ -437,7 +440,6 @@ body.modal-open #master-scrollbar-container {
     display: flex;
     align-items: center;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .images-track {
@@ -671,23 +673,34 @@ body.modal-open #master-scrollbar-container {
         font-size: 1em;
     }
 
-    #btnProcess,
+    .header-buttons,
     .btn-upload,
     .controls-inline {
         flex: 1;
-        margin: 0;
+        margin: 0 !important;
         justify-content: center;
-        min-width: 40px;
-    }
-
-    .controls-inline {
-        margin-left: 0;
+        min-width: 0;
+        /* Allow shrinking below content size */
         display: flex;
+        gap: 5px;
     }
 
-    .controls-inline button {
-        width: 100%;
+    .header-buttons button,
+    .controls-inline button,
+    .btn-upload {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+        padding: 0 8px;
     }
+
+    /* Hide margins that might cause overlap */
+    .btn-primary,
+    .btn-secondary {
+        margin: 0 !important;
+    }
+
+
 
     .image-item canvas,
     .image-item img {
@@ -724,13 +737,22 @@ body.modal-open #master-scrollbar-container {
         padding: 2px;
     }
 
-    @media (max-width: 400px) {
+    @media (max-width: 500px) {
         .btn-upload span {
             font-size: 0;
         }
 
         .btn-upload span::after {
             content: "📁";
+            font-size: 14px;
+        }
+
+        #btnResetProject {
+            font-size: 0;
+        }
+
+        #btnResetProject::after {
+            content: "⚠️";
             font-size: 14px;
         }
 

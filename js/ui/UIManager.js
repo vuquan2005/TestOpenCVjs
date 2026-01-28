@@ -1,3 +1,7 @@
+/**
+ * Manages the main application UI, including rendering the pipeline steps,
+ * handling scroll synchronization, and displaying results.
+ */
 export class UIManager {
     constructor() {
         this.pipelineContainer = document.getElementById("pipeline-container");
@@ -16,6 +20,9 @@ export class UIManager {
         this.updateMasterScrollbar();
     }
 
+    /**
+     * Initializes the horizontal scroll synchronization between the master scrollbar and all image tracks.
+     */
     initScrollSync() {
         if (this.masterContainer) {
             this.masterContainer.addEventListener("scroll", () => {
@@ -29,6 +36,13 @@ export class UIManager {
         }
     }
 
+    /**
+     * Creates a new visual row for a step or the original images.
+     * @param {Object|string} stepOrTitle - Step object or string title.
+     * @param {Object|null} callbacks - Action callbacks (edit, move, delete).
+     * @param {Error|null} error - Error object if the step failed.
+     * @returns {HTMLElement} The scrollable track element.
+     */
     createStepRow(stepOrTitle, callbacks = null, error = null) {
         let titleText = typeof stepOrTitle === "string" ? stepOrTitle : stepOrTitle.name;
 
@@ -38,27 +52,22 @@ export class UIManager {
         const title = document.createElement("div");
         title.className = `step-title ${error ? "step-error" : ""}`;
 
-        // Add Actions if callbacks provided
         if (callbacks && typeof stepOrTitle === "object") {
             const actionsDiv = document.createElement("div");
             actionsDiv.className = "step-actions";
-            actionsDiv.style.marginRight = "10px"; // Space between buttons and title
+            actionsDiv.style.marginRight = "10px";
 
-            // Edit
             const btnEdit = this.createActionButton("✏️", "Edit", callbacks.onEdit);
             actionsDiv.appendChild(btnEdit);
 
-            // Up
             const btnUp = this.createActionButton("⬆️", "Move Up", callbacks.onMoveUp);
             if (!callbacks.canMoveUp) btnUp.disabled = true;
             actionsDiv.appendChild(btnUp);
 
-            // Down
             const btnDown = this.createActionButton("⬇️", "Move Down", callbacks.onMoveDown);
             if (!callbacks.canMoveDown) btnDown.disabled = true;
             actionsDiv.appendChild(btnDown);
 
-            // Delete
             const btnDel = this.createActionButton("🗑️", "Delete", callbacks.onDelete);
             actionsDiv.appendChild(btnDel);
 
@@ -83,7 +92,6 @@ export class UIManager {
         const trackDiv = document.createElement("div");
         trackDiv.className = "images-track";
 
-        // Scroll Sync Logic for Track
         trackDiv.addEventListener("scroll", () => {
             if (this.isSyncingLeft) return;
             this.isSyncingLeft = true;
@@ -101,7 +109,6 @@ export class UIManager {
             window.requestAnimationFrame(() => (this.isSyncingLeft = false));
         });
 
-        // Drag Scrolling
         this.initDragScroll(trackDiv);
 
         rowDiv.appendChild(trackDiv);
@@ -114,12 +121,16 @@ export class UIManager {
         btn.innerText = icon;
         btn.title = title;
         btn.onclick = (e) => {
-            e.stopPropagation(); // Prevent bubbling if needed
+            e.stopPropagation();
             if (onClick) onClick();
         };
         return btn;
     }
 
+    /**
+     * Enables "drag to scroll" functionality for a container.
+     * @param {HTMLElement} trackDiv
+     */
     initDragScroll(trackDiv) {
         let isDown = false;
         let startX;
@@ -153,6 +164,10 @@ export class UIManager {
         trackDiv.style.cursor = "grab";
     }
 
+    /**
+     * Renders the initial row of original images.
+     * @param {Array} loadedItems - Array of {img, name} objects.
+     */
     renderOriginals(loadedItems) {
         const track = this.createStepRow("Original Images");
         loadedItems.forEach((item) => {
@@ -172,6 +187,16 @@ export class UIManager {
         this.updateMasterScrollbar();
     }
 
+    /**
+     * Renders a processed step with its output images.
+     * @param {Object} step - The step object.
+     * @param {Array<cv.Mat>} mats - Array of processed mats.
+     * @param {string[]} fileNames - List of file names.
+     * @param {number} stepIndex - Index of the current step.
+     * @param {number} totalSteps - Total number of steps.
+     * @param {Object} callbacks - callbacks for actions.
+     * @param {Error|null} error - Error if occurred.
+     */
     renderStep(step, mats, fileNames, stepIndex, totalSteps, callbacks, error = null) {
         const actionCallbacks =
             callbacks ?
@@ -203,12 +228,14 @@ export class UIManager {
 
             track.appendChild(wrapper);
 
-            // Draw
             cv.imshow(canvasId, mat);
         });
         this.updateMasterScrollbar();
     }
 
+    /**
+     * Updates the fake bottom scrollbar to match the widest content in the pipeline.
+     */
     updateMasterScrollbar() {
         if (!this.masterSpacer || !this.masterContainer) return;
         let maxScrollWidth = 0;
@@ -226,11 +253,16 @@ export class UIManager {
         if (closeBtn) {
             closeBtn.onclick = () => (this.modal.style.display = "none");
         }
-        window.onclick = (event) => {
+        window.addEventListener("click", (event) => {
             if (event.target == this.modal) this.modal.style.display = "none";
-        };
+        });
     }
 
+    /**
+     * Displays the final results in a modal grid.
+     * @param {Array<cv.Mat>} mats
+     * @param {string[]} fileNames
+     */
     showFinalResult(mats, fileNames) {
         if (!mats || mats.length === 0) {
             alert("No results to display!");

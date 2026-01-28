@@ -1,9 +1,18 @@
+/**
+ * Manages the list of image processing steps.
+ * Handles loading from localStorage, saving, and compiling user code into executable functions.
+ */
 export class StepManager {
     constructor(defaultSteps = []) {
         this.STORAGE_KEY = "opencv_pipeline_steps";
         this.steps = this.loadSteps(defaultSteps);
     }
 
+    /**
+     * Loads steps from localStorage or falls back to defaults.
+     * @param {Array} defaultSteps - List of default steps to use if storage is empty.
+     * @returns {Array} List of step objects.
+     */
     loadSteps(defaultSteps) {
         const stored = localStorage.getItem(this.STORAGE_KEY);
         if (stored) {
@@ -17,6 +26,11 @@ export class StepManager {
         return this.initFromDefaults(defaultSteps);
     }
 
+    /**
+     * Initializes steps from the default list, converting function bodies to strings.
+     * @param {Array} defaultSteps
+     * @returns {Array} List of serializable step objects.
+     */
     initFromDefaults(defaultSteps) {
         // Convert existing function-based steps to serializable format
         return defaultSteps.map((step) => {
@@ -36,72 +50,75 @@ export class StepManager {
         });
     }
 
+    /**
+     * Saves the current steps to localStorage.
+     */
     save() {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.steps));
     }
 
+    /**
+     * Returns the raw list of steps (for UI editing).
+     * @returns {Array}
+     */
     getSteps() {
         return this.steps;
     }
 
+    /**
+     * Converts stored steps into executable functions.
+     * Compiles the code string into a function that acts as a sandbox.
+     * @returns {Array} List of steps with a callable `process(src)` method.
+     */
     getExecutableSteps() {
         return this.steps
             .filter((s) => s.enabled)
             .map((s) => {
-                // 1. CHUẨN BỊ MÔI TRƯỜNG "SANDBOX"
-                // Ép buộc code chạy trong try/catch và dùng dst có sẵn
                 const wrappedBody = `
                     "use strict";
-                    // Tự động tạo dst để người dùng không phải new
-                    let dst = new cv.Mat(); 
-                    
+                    let dst = new cv.Mat();
                     try {
-                        // --- Code người dùng (được chèn vào đây) ---
                         ${s.code}
-                        // -------------------------------------------
-
-                        // Kiểm tra xem người dùng có gán dữ liệu vào dst không
                         if (dst.empty()) {
-                            // Nếu họ quên xử lý, ít nhất trả về clone của src để không crash
                             dst.delete(); 
                             return src.clone();
                         }
                         return dst;
-
                     } catch (e) {
-                        // Nếu lỗi, dọn dẹp bộ nhớ ngay lập tức
                         if (dst) dst.delete();
-                        throw e; // Ném lỗi ra ngoài để hàm process hứng
+                        throw e;
                     }
                 `;
-
                 try {
-                    // 2. TẠO HÀM MỘT LẦN (Compile)
                     const func = new Function("src", "cv", wrappedBody);
-
                     return {
                         id: s.id,
                         name: s.name,
-                        // 3. THỰC THI AN TOÀN
+
                         process: (src) => {
                             try {
                                 return func(src, cv);
                             } catch (runtimeError) {
-                                console.error(`❌ Lỗi chạy bước [${s.name}]:`, runtimeError);
+                                console.error(`❌ Error running step [${s.name}]:`, runtimeError);
                                 throw runtimeError;
                             }
                         },
                     };
                 } catch (syntaxError) {
-                    console.error(`❌ Lỗi cú pháp ở bước [${s.name}]:`, syntaxError);
+                    console.error(`❌ Syntax error in step [${s.name}]:`, syntaxError);
                     return {
-                        name: `${s.name} (Lỗi cú pháp)`,
-                        process: (src) => src.clone(), // Bypass
+                        name: `${s.name} (Syntax Error)`,
+                        process: (src) => src.clone(),
                     };
                 }
             });
     }
 
+    /**
+     * Adds a new step.
+     * @param {string} name - Name of the step.
+     * @param {string} code - Function body code.
+     */
     addStep(name, code) {
         this.steps.push({
             id: crypto.randomUUID(),
@@ -112,6 +129,12 @@ export class StepManager {
         this.save();
     }
 
+    /**
+     * Updates an existing step.
+     * @param {string} id - UUID of the step.
+     * @param {string} name - New name.
+     * @param {string} code - New code.
+     */
     updateStep(id, name, code) {
         const step = this.steps.find((s) => s.id === id);
         if (step) {
@@ -121,11 +144,20 @@ export class StepManager {
         }
     }
 
+    /**
+     * Deletes a step by ID.
+     * @param {string} id
+     */
     deleteStep(id) {
         this.steps = this.steps.filter((s) => s.id !== id);
         this.save();
     }
 
+    /**
+     * Moves a step up or down in the list.
+     * @param {number} index - Current index of the step.
+     * @param {number} direction - -1 for up, 1 for down.
+     */
     moveStep(index, direction) {
         if (direction === -1 && index > 0) {
             [this.steps[index], this.steps[index - 1]] = [this.steps[index - 1], this.steps[index]];

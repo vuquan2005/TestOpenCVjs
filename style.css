@@ -1,20 +1,16 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 10px;
-    padding-bottom: 30px;
-    /* Space for master scrollbar */
     margin: 0;
     font-size: 13px;
 }
 
-/* Master Scrollbar */
 #master-scrollbar-container {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     height: 12px;
-    /* Reduced from 16px */
     background: #f8f9fa;
     border-top: 1px solid #ccc;
     overflow-x: auto;
@@ -30,7 +26,6 @@ body {
     background: #c1c1c1;
     border-radius: 5px;
     border: 2px solid #f8f9fa;
-    /* Padding effect */
 }
 
 #master-scrollbar-container::-webkit-scrollbar-thumb:hover {
@@ -43,7 +38,6 @@ body {
     visibility: hidden;
 }
 
-/* Header Compact: Gom H2, Status, Controls vào 1 hàng ngang */
 .header-compact {
     display: flex;
     align-items: center;
@@ -68,7 +62,6 @@ body {
     font-size: 0.9em;
     font-weight: 500;
     color: #f0ad4e;
-    /* Màu vàng cam */
     white-space: nowrap;
     padding-left: 0;
 }
@@ -84,7 +77,6 @@ body {
     position: relative;
     overflow: hidden;
     background-color: #28a745 !important;
-    /* Màu xanh lá cho thân thiện */
 }
 
 .btn-upload:hover {
@@ -143,11 +135,6 @@ body {
     transform: none;
 }
 
-.btn-primary:hover .icon-spin {
-    display: inline-block;
-    animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -159,9 +146,6 @@ body {
     }
 }
 
-
-
-/* Settings & Editor Modal - Modern Light Theme */
 .settings-content,
 .editor-content {
     max-width: 700px;
@@ -188,7 +172,6 @@ body {
 .modal-header h2 {
     margin: 0;
     margin-right: auto;
-    /* Push buttons to right */
     font-size: 1.1rem;
     font-weight: 600;
     color: #111827;
@@ -211,7 +194,6 @@ body {
     background: #ffffff;
 }
 
-/* Scrollbar for steps list */
 .steps-list::-webkit-scrollbar {
     width: 8px;
 }
@@ -295,7 +277,6 @@ body {
     color: #9ca3af !important;
 }
 
-/* Specific colors for actions on hover */
 .step-actions button[title="Delete"]:hover {
     background: #fee2e2;
     color: #ef4444;
@@ -396,14 +377,12 @@ body {
     color: #111827;
 }
 
-/* Spacer removal since we use auto margin */
 .spacer {
     display: none;
 }
 
 
 
-/* Container chính */
 #pipeline-container {
     display: flex;
     flex-direction: column;
@@ -450,22 +429,17 @@ body {
     transform: translateY(0);
 }
 
-/* Một hàng (Bước xử lý) */
 .step-row {
     border: 1px solid #eaeaea;
     padding: 0;
-    /* Remove padding to flush title */
     background-color: #fff;
     display: flex;
     flex-direction: column;
-    /* Row -> Column (Stacked) */
     align-items: stretch;
     gap: 0;
     overflow: hidden;
-    /* Remove fixed height to allow flexible content */
 }
 
-/* STEP TITLE (Thanh tiêu đề ngang) */
 .step-title {
     background-color: #f8f9fa;
     border-bottom: 1px solid #eaeaea;
@@ -480,7 +454,6 @@ body {
     box-sizing: border-box;
 }
 
-/* Khu vực chứa các ảnh - Xếp ngang */
 .images-track {
     display: flex;
     flex-direction: row;
@@ -496,7 +469,6 @@ body {
 
 .images-track::-webkit-scrollbar {
     height: 0px;
-    /* Hide scrollbar completely */
     background: transparent;
 }
 
@@ -509,7 +481,6 @@ body {
     background: transparent;
 }
 
-/* Từng ô ảnh */
 .image-item {
     flex: 0 0 auto;
     display: flex;
@@ -531,10 +502,8 @@ body {
     display: none;
 }
 
-/* Modal Full Screen */
 .modal {
     display: none;
-    /* Hidden by default */
     position: fixed;
     z-index: 2000;
     left: 0;
@@ -546,25 +515,42 @@ body {
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 1% auto;
-    padding: 10px;
-    border: 1px solid #888;
-    width: 97%;
-    height: 93%;
+    background-color: #ffffff;
+    margin: 2% auto;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1200px;
+    height: 90%;
+    max-height: 95vh;
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 3px;
-    padding-bottom: 1px;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 10px 15px;
+    background-color: #fff;
+    z-index: 10;
 }
 
 .modal-header h2 {
@@ -590,11 +576,12 @@ body {
 
 .result-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 5px;
     overflow-y: auto;
-    padding: 5px;
+    padding: 10px;
     flex: 1;
+    background-color: #f8f9fa;
 }
 
 .result-grid .image-item {
@@ -602,11 +589,11 @@ body {
     padding: 2px;
     border-radius: 4px;
     background: #fff;
-    transition: transform 0.2s;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .result-grid .image-item:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
     z-index: 10;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
@@ -616,8 +603,7 @@ body {
     max-width: 100%;
     height: auto;
     width: auto;
-    max-height: 100px;
-    /* Zoom to see details better */
+    max-height: 140px;
     object-fit: contain;
 }
 
@@ -628,9 +614,7 @@ body {
     margin-top: 3px;
     color: #666;
     word-break: break-word;
-    /* Đổi break-all sang break-word */
     white-space: normal;
-    /* Cho phép xuống dòng */
     overflow-wrap: anywhere;
     max-width: 100%;
 }
@@ -639,13 +623,11 @@ body {
     display: none;
 }
 
-/* --- Mobile Responsiveness --- */
 @media (max-width: 768px) {
     body {
         padding: 5px;
     }
 
-    /* Header Compact - Stack content */
     .header-compact {
         flex-wrap: wrap;
         gap: 8px;
@@ -665,12 +647,10 @@ body {
         gap: 10px;
     }
 
-    /* Make status icon visible clearly */
     .header-compact #status {
         font-size: 1em;
     }
 
-    /* Shared layout for top buttons */
     #btnProcess,
     .btn-upload,
     .controls-inline {
@@ -689,17 +669,11 @@ body {
         width: 100%;
     }
 
-    /* Step Rows - Stack Title on Top (Default behavior now) */
-
-    /* Reduce image size for mobile to see more context */
-
-    /* Reduce image size for mobile to see more context */
     .image-item canvas,
     .image-item img {
         max-height: 80px;
     }
 
-    /* Result Modal - Full Screen Immersion */
     .modal-content {
         width: 100%;
         height: 100%;
@@ -719,7 +693,6 @@ body {
         padding: 2px;
     }
 
-    /* Very Small Screens (< 400px) Tweaks */
     @media (max-width: 400px) {
         .btn-upload span {
             font-size: 0;
@@ -730,7 +703,6 @@ body {
             font-size: 14px;
         }
 
-        /* View Result Icon Toggle */
         #btnViewResult .label-text {
             display: none;
         }

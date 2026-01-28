@@ -1,3 +1,7 @@
+/**
+ * UI Manager for the Settings functionality.
+ * Handles the step editor modal, Monaco editor integration, and saving changes to StepManager.
+ */
 export class SettingsUI {
     constructor(stepManager, onSave) {
         this.stepManager = stepManager;
@@ -17,9 +21,12 @@ export class SettingsUI {
         this.monacoLoaded = false;
     }
 
+    /**
+     * Lazily loads the Monaco Editor from CDN.
+     */
     loadMonaco() {
         if (this.monacoLoaded) return;
-        this.monacoLoaded = true; // Prevent double loading
+        this.monacoLoaded = true;
 
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js";
@@ -30,6 +37,9 @@ export class SettingsUI {
         document.body.appendChild(script);
     }
 
+    /**
+     * Configures the Monaco environment and initializes the editor instance.
+     */
     configureAndLoadMonaco() {
         require.config({
             paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs" },
@@ -69,15 +79,19 @@ export class SettingsUI {
         }
 
         // Window click to close
-        window.onclick = (event) => {
+        window.addEventListener("click", (event) => {
             // Note: Since we removed settingsModal, we only check editorModal
             if (event.target == this.editorModal) this.editorModal.style.display = "none";
-        };
+        });
     }
 
     // open() method removed as it opened the Settings List Modal.
     // Uses openEditor() directly.
 
+    /**
+     * Opens the Step Editor Modal.
+     * @param {string|null} stepId - ID of the step to edit, or null to create a new step.
+     */
     openEditor(stepId = null) {
         if (!this.monacoLoaded) {
             this.loadMonaco();
@@ -95,7 +109,7 @@ export class SettingsUI {
             document.getElementById("editorTitle").innerText = "Edit Step";
         } else {
             this.stepNameInput.value = "New Step";
-            codeValue = `// --- VÍ DỤ: CHUYỂN ẢNH XÁM (GRAYSCALE) ---
+            codeValue = `
 // cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
 
 src.copyTo(dst);
@@ -103,13 +117,11 @@ src.copyTo(dst);
             document.getElementById("editorTitle").innerText = "Add Step";
         }
 
-        // Set value to Monaco
         if (this.editor) {
             this.editor.setValue(codeValue);
             // Layout needs to be called after container is visible
             setTimeout(() => this.editor.layout(), 100);
         } else {
-            // Wait for editor to be ready
             const checkEditor = setInterval(() => {
                 if (this.editor) {
                     clearInterval(checkEditor);
@@ -118,16 +130,18 @@ src.copyTo(dst);
                 }
             }, 100);
 
-            // Timeout after 10 seconds to stop checking
             setTimeout(() => clearInterval(checkEditor), 10000);
         }
     }
 
+    /**
+     * Saves the step currently in the editor.
+     * Validates input names and code syntax before saving.
+     */
     saveStepFromEditor() {
         const id = this.stepIdInput.value;
         const name = this.stepNameInput.value;
 
-        // Get value from Monaco
         const code = this.editor ? this.editor.getValue() : "";
 
         if (!name || !code) {
@@ -136,8 +150,7 @@ src.copyTo(dst);
         }
 
         try {
-            // Validate syntax roughly
-            const F = new Function("src", "cv", code); // Just test parse
+            const F = new Function("src", "cv", code);
         } catch (e) {
             alert("Syntax Error in code: " + e.message);
             return;
@@ -150,9 +163,7 @@ src.copyTo(dst);
         }
 
         this.editorModal.style.display = "none";
-        // removed this.renderList();
 
-        // Trigger auto-save/reload if callback exists
         if (this.onSave) this.onSave();
     }
 }

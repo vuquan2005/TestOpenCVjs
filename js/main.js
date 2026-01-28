@@ -22,9 +22,7 @@ const fileInput = document.getElementById("fileInput");
 const btnViewResult = document.getElementById("btnViewResult");
 const statusIcon = document.getElementById("status");
 
-// Initialize Settings UI
 const settingsUI = new SettingsUI(stepManager, () => {
-    // On Save callback
     runPipeline();
 });
 
@@ -42,20 +40,23 @@ if (btnResetProject) {
     });
 }
 
+/**
+ * Main execution function.
+ * 1. Checks OpenCV status.
+ * 2. Clears UI.
+ * 3. Loads images (from file or default).
+ * 4. Iterates through steps, executing them and rendering results.
+ */
 async function runPipeline() {
-    // Check if OpenCV is ready
     if (typeof cv === "undefined" || !cv.getBuildInformation) {
         console.warn("OpenCV not ready yet");
         return;
     }
 
-    // Disable button while processing
     btnProcess.disabled = true;
 
-    // Clear UI mainly for the pipeline part
     ui.clear();
 
-    // Check input source and load images
     let loadedItems;
 
     if (fileInput.files.length > 0) {
@@ -70,13 +71,10 @@ async function runPipeline() {
         return;
     }
 
-    // Render Original Row
     ui.renderOriginals(loadedItems);
 
-    // Get Executable Steps
     const currentSteps = stepManager.getExecutableSteps();
 
-    // Run Steps
     for (let i = 0; i < currentSteps.length; i++) {
         const step = currentSteps[i];
 
@@ -112,7 +110,6 @@ async function runPipeline() {
     btnProcess.disabled = false;
 }
 
-// Event Listeners
 btnProcess.addEventListener("click", () => {
     runPipeline();
 });
@@ -134,20 +131,18 @@ if (btnAddNewStepMain) {
     });
 }
 
-// OpenCV Initialization Helper
 function onOpenCVReady() {
     statusIcon.innerText = "🟢";
     statusIcon.style.color = "green";
+    statusIcon.title = "OpenCV Ready";
     btnProcess.disabled = false;
     console.log("OpenCV Ready");
 
-    // Auto run
     setTimeout(() => {
         btnProcess.click();
     }, 500);
 }
 
-// Check OpenCV Status
 const checkOpenCv = setInterval(() => {
     if (typeof cv !== "undefined" && cv.getBuildInformation) {
         clearInterval(checkOpenCv);

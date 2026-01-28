@@ -33,14 +33,6 @@ btnProcess.addEventListener('click', async () => {
         return sChannel;
     });
 
-    // --- THAY ĐỔI 1: Dùng Median Blur để khử nhiễu đốm ---
-    processBatchStep("median blur", (src) => {
-        let dst = new cv.Mat();
-        // Ksize = 3 hoặc 5. Với nhiễu nhiều như ảnh mẫu, thử 5 sẽ sạch hơn
-        cv.medianBlur(src, dst, 3);
-        return dst;
-    });
-
     processBatchStep("otsu", (src) => {
         let dst = new cv.Mat();
         cv.threshold(
@@ -53,7 +45,6 @@ btnProcess.addEventListener('click', async () => {
         return dst;
     });
 
-    // --- THAY ĐỔI 2: Loại bỏ nhiễu TRƯỚC khi Morph để tránh làm nhiễu to ra ---
     processBatchStep("remove small blobs", (src) => {
         let dst = src.clone();
         let contours = new cv.MatVector();
@@ -105,8 +96,6 @@ btnProcess.addEventListener('click', async () => {
         return dst;
     });
 
-    // --- THAY ĐỔI 3: Dùng Morph Close để nối liền nét chữ ---
-    // (Bỏ qua Morph Open vì Median Blur đã làm sạch nhiễu rồi)
     processBatchStep("morph close", (src) => {
         let dst = new cv.Mat();
 

@@ -3,6 +3,9 @@ import { UIManager } from "./ui/UIManager.js";
 import { steps as defaultSteps } from "./steps/defaultSteps.js";
 import { StepManager } from "./core/StepManager.js";
 import { SettingsUI } from "./ui/SettingsUI.js";
+import { ModalManager } from "./ui/ModalManager.js";
+
+ModalManager.init();
 
 const DEFAULT_IMAGES = [
     "img/1.jpg",
@@ -131,21 +134,18 @@ const closeAbout = aboutModal ? aboutModal.querySelector(".close-modal") : null;
 
 if (btnAbout && aboutModal) {
     btnAbout.addEventListener("click", () => {
-        aboutModal.style.display = "block";
-        document.body.classList.add("modal-open");
+        ModalManager.open(aboutModal);
     });
 
     if (closeAbout) {
         closeAbout.addEventListener("click", () => {
-            aboutModal.style.display = "none";
-            document.body.classList.remove("modal-open");
+            ModalManager.close(aboutModal);
         });
     }
 
     window.addEventListener("click", (event) => {
         if (event.target === aboutModal) {
-            aboutModal.style.display = "none";
-            document.body.classList.remove("modal-open");
+            ModalManager.close(aboutModal);
         }
     });
 }

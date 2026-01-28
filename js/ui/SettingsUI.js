@@ -2,6 +2,8 @@
  * UI Manager for the Settings functionality.
  * Handles the step editor modal, Monaco editor integration, and saving changes to StepManager.
  */
+import { ModalManager } from "./ModalManager.js";
+
 export class SettingsUI {
     constructor(stepManager, onSave) {
         this.stepManager = stepManager;
@@ -78,8 +80,7 @@ export class SettingsUI {
     initEvents() {
         if (this.btnCloseEditor) {
             this.btnCloseEditor.onclick = () => {
-                this.editorModal.style.display = "none";
-                document.body.classList.remove("modal-open");
+                ModalManager.close(this.editorModal);
             };
         }
 
@@ -91,8 +92,7 @@ export class SettingsUI {
 
         if (this.btnCancelStep) {
             this.btnCancelStep.onclick = () => {
-                this.editorModal.style.display = "none";
-                document.body.classList.remove("modal-open");
+                ModalManager.close(this.editorModal);
             };
         }
 
@@ -100,8 +100,7 @@ export class SettingsUI {
         window.addEventListener("click", (event) => {
             // Note: Since we removed settingsModal, we only check editorModal
             if (event.target == this.editorModal) {
-                this.editorModal.style.display = "none";
-                document.body.classList.remove("modal-open");
+                ModalManager.close(this.editorModal);
             }
         });
     }
@@ -118,8 +117,7 @@ export class SettingsUI {
             this.loadMonaco();
         }
 
-        this.editorModal.style.display = "block";
-        document.body.classList.add("modal-open");
+        ModalManager.open(this.editorModal);
 
         let codeValue = "";
         this.stepIdInput.value = stepId || "";
@@ -184,8 +182,7 @@ src.copyTo(dst);
             this.stepManager.addStep(name, code);
         }
 
-        this.editorModal.style.display = "none";
-        document.body.classList.remove("modal-open");
+        ModalManager.close(this.editorModal);
 
         if (this.onSave) this.onSave();
     }

@@ -2,6 +2,8 @@
  * Manages the main application UI, including rendering the pipeline steps,
  * handling scroll synchronization, and displaying results.
  */
+import { ModalManager } from "./ModalManager.js";
+
 export class UIManager {
     constructor() {
         this.pipelineContainer = document.getElementById("pipeline-container");
@@ -249,17 +251,15 @@ export class UIManager {
     }
 
     initModalEvents() {
-        const closeBtn = document.querySelector(".close-modal");
+        const closeBtn = this.modal.querySelector(".close-modal");
         if (closeBtn) {
             closeBtn.onclick = () => {
-                this.modal.style.display = "none";
-                document.body.classList.remove("modal-open");
+                ModalManager.close(this.modal);
             };
         }
         window.addEventListener("click", (event) => {
             if (event.target == this.modal) {
-                this.modal.style.display = "none";
-                document.body.classList.remove("modal-open");
+                ModalManager.close(this.modal);
             }
         });
     }
@@ -294,7 +294,6 @@ export class UIManager {
             cv.imshow(canvasId, mat);
         });
 
-        this.modal.style.display = "block";
-        document.body.classList.add("modal-open");
+        ModalManager.open(this.modal);
     }
 }

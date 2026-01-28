@@ -11,16 +11,20 @@ Một ứng dụng web nhẹ để thực nghiệm xử lý ảnh hàng loạt b
 - **Xử Lý Hàng Loạt (Batch Processing)**: Áp dụng một chuỗi các thao tác OpenCV cho nhiều ảnh cùng lúc.
 - **Pipeline Trực Quan**: Hiển thị kết quả của mọi bước xử lý theo từng hàng, cho phép so sánh song song giữa các ảnh.
 - **Tự Động Xử Lý**: Tự động kích hoạt xử lý khi tải trang (sử dụng ảnh mẫu mặc định) hoặc khi chọn file mới từ máy tính.
-- **Quản Lý Bộ Nhớ**: Tự động giải phóng các đối tượng `Mat` của OpenCV sau mỗi bước để tránh rò rỉ bộ nhớ trên trình duyệt.
+- **Quản Lý Bước Xử Lý Động**:
+    - **Thêm/Sửa/Xóa Bước**: Thêm các bước xử lý mới trực tiếp trên trình duyệt với trình soạn thảo code.
+    - **Sắp Xếp Lại Bước**: Di chuyển các bước lên hoặc xuống trong quy trình.
+    - **Lưu Trữ**: Các bước tùy chỉnh của bạn được lưu tự động vào Local Storage của trình duyệt.
+- **Quản Lý Bộ Nhớ**: Tự động giải phóng các đối tượng `Mat` của OpenCV sau mỗi bước để tránh rò rỉ bộ nhớ.
 - **Đầu Vào Linh Hoạt**:
     - Mặc định tải các ảnh mẫu từ thư mục `img/`.
     - Hỗ trợ tải ảnh local thông qua bộ chọn tệp tùy chỉnh.
 - **Xem Kết Quả Cuối**: Nút "View Results" giúp kiểm tra đầu ra cuối cùng của toàn bộ pipeline trong một lưới giao diện sạch sẽ.
-- **Giao Diện Tương Tác**: Tiêu đề các bước có thể thu gọn/mở rộng với thông tin chi tiết.
+- **Khả Năng Reset**: Dễ dàng khôi phục pipeline về trạng thái mặc định, xóa mọi tùy chỉnh cục bộ.
 
 ## 📦 Bắt Đầu
 
-Dự án hoàn toàn chạy ở phía client; bạn chỉ cần một static web server đơn giản để khởi chạy.
+Dự án sử dụng ES Modules, do đó bạn cần một static web server đơn giản để chạy nó (giao thức file:// sẽ không hoạt động).
 
 ### Yêu Cầu
 
@@ -55,36 +59,61 @@ Dự án hoàn toàn chạy ở phía client; bạn chỉ cần một static web
 ## 📂 Cấu Trúc Dự Án
 
 - **`index.html`**: Điểm vào chính và bố cục giao diện.
-- **`style.css`**: Định dạng phong cách hiện đại cho pipeline và các nút điều khiển.
-- **`script.js`**: Logic cốt lõi để tải ảnh, quản lý pipeline và xử lý bộ nhớ.
-- **`pipeline_steps.js`**: File cấu hình nơi định nghĩa các bước xử lý (ví dụ: chuyển đổi HSV, Threshold).
+- **`style.css`**: Định dạng giao diện cho ứng dụng.
 - **`opencv.js`**: Thư viện OpenCV đã được biên dịch sang WebAssembly (WASM).
-- **`img/`**: Thư mục chứa các ảnh mẫu để xử lý mặc định.
+- **`js/`**:
+    - **`main.js`**: Điểm khởi chạy ứng dụng, khởi tạo các thành phần.
+    - **`core/`**:
+        - **`PipelineManager.js`**: Xử lý tải ảnh và logic thực thi pipeline.
+        - **`StepManager.js`**: Quản lý danh sách các bước xử lý (Thêm/Sửa/Xóa, sắp xếp, lưu trữ).
+    - **`ui/`**:
+        - **`UIManager.js`**: Xử lý hiển thị trực quan của pipeline.
+        - **`SettingsUI.js`**: Quản lý modal chỉnh sửa bước.
+    - **`steps/`**:
+        - **`defaultSteps.js`**: Định nghĩa các bước xử lý khởi tạo/mặc định.
+- **`img/`**: Thư mục chứa các ảnh mẫu.
 
 ## 📝 Tùy Chỉnh Pipeline
 
-Bạn có thể dễ dàng sửa đổi hoặc thêm các bước xử lý mới trong `pipeline_steps.js`. Mỗi bước được định nghĩa bằng hàm `processBatchStep`:
+### Thông qua Giao Diện (Khuyên dùng)
+
+Bạn có thể sửa đổi pipeline trực tiếp trên giao diện web:
+
+1. Nhấn **"+ Add New Step"** để thêm một thao tác OpenCV tùy chỉnh.
+2. Nhấn biểu tượng **Edit** (cây bút) trên một bước hiện có để sửa code.
+3. Sử dụng các mũi tên **Lên/Xuống** để sắp xếp lại vị trí các bước.
+4. Sử dụng biểu tượng **Delete** (thùng rác) để xóa một bước.
+
+Các thay đổi của bạn được lưu tự động. Để quay lại pipeline gốc, nhấn nút **Reset** trên thanh tiêu đề.
+
+### Thêm Các Bước Mặc Định
+
+Để thêm vĩnh viễn các bước vào cấu hình mặc định, hãy chỉnh sửa file `js/steps/defaultSteps.js`. Mỗi bước là một object với `id`, `name`, và hàm `process`:
 
 ```javascript
-processBatchStep("Tên Bước", (src) => {
-    let dst = new cv.Mat();
-    // Logic OpenCV của bạn tại đây
-    cv.cvtColor(src, dst, cv.COLOR_RGB2GRAY);
-    return dst; // Trả về Mat kết quả cho bước tiếp theo
-});
+{
+    id: "step-unique-id",
+    name: "Tên Bước",
+    process: (src) => {
+        let dst = new cv.Mat();
+        // Logic OpenCV của bạn ở đây
+        cv.cvtColor(src, dst, cv.COLOR_RGB2GRAY);
+        return dst; // Trả về kết quả cho bước tiếp theo
+    }
+}
 ```
 
-### Ví Dụ Pipeline Hiện Tại (Xử Lý Captcha)
+### Pipeline Mặc Định Hiện Tại (Xử Lý Captcha)
 
-File `pipeline_steps.js` mặc định bao gồm một chuỗi các bước mạnh mẽ để làm sạch văn bản bị nhiễu:
+Cấu hình mặc định trong `js/steps/defaultSteps.js` bao gồm một chuỗi xử lý để làm sạch văn bản nhiễu:
 
 1. **Chuyển đổi HSV**: Phân đoạn màu sắc tốt hơn.
-2. **Chọn Kênh Màu**: Trích xuất kênh Saturation để làm nổi bật văn bản.
-3. **Median Blur**: Loại bỏ nhiễu "muối tiêu".
+2. **Chọn Kênh Màu**: Trích xuất kênh Saturation.
+3. **Median Blur**: Loại bỏ nhiễu.
 4. **Otsu Thresholding**: Nhị phân hóa tối ưu.
-5. **Loại Bỏ Blob**: Lọc contour tùy chỉnh để xóa các hạt nhiễu nhỏ còn lại.
-6. **Morphological Closing**: Nối các nét chữ bị đứt quãng.
-7. **Bitwise Not**: Đảo ngược màu để có kết quả văn bản đen trên nền trắng tiêu chuẩn.
+5. **Loại Bỏ Blob**: Lọc các hạt nhiễu nhỏ.
+6. **Morphological Closing**: Nối các đoạn bị đứt.
+7. **Bitwise Not**: Đảo ngược màu cho đầu ra tiêu chuẩn.
 
 ## 📄 Giấy Phép
 

@@ -2,6 +2,8 @@
 // Chúng ta cần lưu trữ mảng Mat của bước hiện tại để dùng cho bước sau
 let currentMats = [];
 let fileNames = []; // Lưu tên file để hiển thị cho đẹp
+let isSyncingLeft = false; // Cờ để đồng bộ cuộn
+
 const DEFAULT_IMAGES = [
     'img/1.jpg',
     'img/2.jpg',
@@ -233,6 +235,26 @@ function createStepRow(titleText) {
 
     const trackDiv = document.createElement('div');
     trackDiv.className = 'images-track';
+
+    // Đồng bộ cuộn (Scroll Sync)
+    trackDiv.addEventListener('scroll', function () {
+        if (isSyncingLeft) return;
+        isSyncingLeft = true;
+
+        const currentLeft = this.scrollLeft;
+        const allTracks = document.querySelectorAll('.images-track');
+        allTracks.forEach(t => {
+            if (t !== this) {
+                t.scrollLeft = currentLeft;
+            }
+        });
+
+        // Reset cờ sau khi cập nhật giao diện
+        window.requestAnimationFrame(() => {
+            isSyncingLeft = false;
+        });
+    });
+
     rowDiv.appendChild(trackDiv);
 
     pipelineContainer.appendChild(rowDiv);

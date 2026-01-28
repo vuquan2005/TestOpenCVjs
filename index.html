@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batch Processing Pipeline</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -16,11 +17,15 @@
             <input type="file" id="fileInput" multiple accept="image/*" />
         </label>
         <div class="controls-inline">
-            <button id="btnViewResult" class="btn-primary">View Results</button>
+            <button id="btnViewResult" class="btn-primary" title="View Results">
+                <span class="label-text">View Results</span>
+                <span class="icon-mobile">👁️</span>
+            </button>
         </div>
     </div>
 
     <div id="pipeline-container"></div>
+
 
     <!-- Full Screen Result Modal -->
     <div id="resultModal" class="modal">
@@ -32,6 +37,12 @@
             <div id="resultGrid" class="result-grid"></div>
         </div>
     </div>
+
+    <!-- Master Scrollbar at Bottom -->
+    <div id="master-scrollbar-container">
+        <div id="master-scrollbar-spacer"></div>
+    </div>
+
 
     <script src="script.js"></script>
     <script src="pipeline_steps.js"></script>

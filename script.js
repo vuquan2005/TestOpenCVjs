@@ -18,6 +18,43 @@ const btnProcess = document.getElementById('btnProcess');
 const btnViewResult = document.getElementById('btnViewResult');
 const fileInput = document.getElementById('fileInput');
 
+// Master Scrollbar Elements
+const masterContainer = document.getElementById('master-scrollbar-container');
+const masterSpacer = document.getElementById('master-scrollbar-spacer');
+
+// Sync Master Scrollbar -> Tracks
+if (masterContainer) {
+    masterContainer.addEventListener('scroll', function () {
+        if (isSyncingLeft) return;
+        isSyncingLeft = true;
+
+        const currentLeft = this.scrollLeft;
+        const allTracks = document.querySelectorAll('.images-track');
+        allTracks.forEach(t => {
+            t.scrollLeft = currentLeft;
+        });
+
+        window.requestAnimationFrame(() => {
+            isSyncingLeft = false;
+        });
+    });
+}
+
+function updateMasterScrollbar() {
+    if (!masterSpacer || !masterContainer) return;
+
+    // Find the max scroll width among all tracks
+    let maxScrollWidth = 0;
+    const allTracks = document.querySelectorAll('.images-track');
+    allTracks.forEach(t => {
+        if (t.scrollWidth > maxScrollWidth) maxScrollWidth = t.scrollWidth;
+    });
+
+    if (maxScrollWidth > 0) {
+        masterSpacer.style.width = maxScrollWidth + 'px';
+    }
+}
+
 // Modal Elements
 const modal = document.getElementById("resultModal");
 const closeModalSpan = document.getElementsByClassName("close-modal")[0];
@@ -111,6 +148,8 @@ function initFirstRow(loadedImages) {
         currentMats.push(mat);
         fileNames.push(item.name);
     });
+    // Cập nhật thanh cuộn master
+    updateMasterScrollbar();
 }
 
 // Hàm xử lý hàng loạt
@@ -155,6 +194,9 @@ function processBatchStep(stepName, processCallback) {
 
     // Cập nhật mảng hiện tại thành mảng mới
     currentMats = nextMats;
+
+    // Cập nhật thanh cuộn master
+    updateMasterScrollbar();
 }
 
 // Hàm hiển thị kết quả cuối cùng lên Modal Grid
@@ -197,39 +239,7 @@ function createStepRow(titleText) {
 
     const title = document.createElement('div');
     title.className = 'step-title';
-
-    // Nút toggle chi tiết
-    const infoBtn = document.createElement('button');
-    infoBtn.className = 'step-info-btn';
-    infoBtn.innerHTML = 'ℹ️';
-    infoBtn.title = "Click to toggle all title details";
-
-    // Hàm thực hiện toggle cho tất cả
-    const toggleAll = (e) => {
-        if (e) e.stopPropagation();
-        const isCurrentlyExpanded = title.classList.contains('expanded');
-        const allTitles = document.querySelectorAll('.step-title');
-        allTitles.forEach(t => {
-            if (isCurrentlyExpanded) t.classList.remove('expanded');
-            else t.classList.add('expanded');
-        });
-    };
-
-    infoBtn.onclick = toggleAll;
-    title.onclick = toggleAll; // Cho phép nhấn vào vùng tiêu đề để toggle
-    title.appendChild(infoBtn);
-
-    // Mặc định luôn mở rộng để dễ nhìn
-    title.classList.add('expanded');
-
-    // Lưu data-title để CSS tooltip dùng
-    title.setAttribute('data-title', titleText);
-
-    // Tạo span chứa text để hiện khi expanded
-    const titleSpan = document.createElement('span');
-    titleSpan.className = 'title-text';
-    titleSpan.innerText = titleText;
-    title.appendChild(titleSpan);
+    title.innerText = titleText;
 
     rowDiv.appendChild(title);
 
@@ -249,6 +259,11 @@ function createStepRow(titleText) {
             }
         });
 
+        // Sync to Master Scrollbar
+        if (masterContainer) {
+            masterContainer.scrollLeft = currentLeft;
+        }
+
         // Reset cờ sau khi cập nhật giao diện
         window.requestAnimationFrame(() => {
             isSyncingLeft = false;
@@ -258,6 +273,43 @@ function createStepRow(titleText) {
     rowDiv.appendChild(trackDiv);
 
     pipelineContainer.appendChild(rowDiv);
+
+    // --- Drag functionality ---
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    trackDiv.addEventListener('mousedown', (e) => {
+        isDown = true;
+        trackDiv.classList.add('active'); // Optional: for styling
+        startX = e.pageX - trackDiv.offsetLeft;
+        scrollLeft = trackDiv.scrollLeft;
+        trackDiv.style.cursor = 'grabbing';
+    });
+
+    trackDiv.addEventListener('mouseleave', () => {
+        isDown = false;
+        trackDiv.classList.remove('active');
+        trackDiv.style.cursor = 'grab';
+    });
+
+    trackDiv.addEventListener('mouseup', () => {
+        isDown = false;
+        trackDiv.classList.remove('active');
+        trackDiv.style.cursor = 'grab';
+    });
+
+    trackDiv.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault(); // Prevent text selection
+        const x = e.pageX - trackDiv.offsetLeft;
+        const walk = (x - startX) * 2; // Scroll-fast factor
+        trackDiv.scrollLeft = scrollLeft - walk;
+    });
+
+    // Default cursor
+    trackDiv.style.cursor = 'grab';
+
     return trackDiv; // Trả về nơi chứa ảnh để append vào
 }
 

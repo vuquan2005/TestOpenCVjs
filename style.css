@@ -155,14 +155,299 @@ body {
 
     to {
         transform: rotate(360deg);
+
     }
 }
+
+
+
+/* Settings & Editor Modal - Modern Light Theme */
+.settings-content,
+.editor-content {
+    max-width: 700px;
+    height: auto;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    color: #333;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.modal-header h2 {
+    margin: 0;
+    margin-right: auto;
+    /* Push buttons to right */
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+    letter-spacing: 0.5px;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.steps-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+}
+
+/* Scrollbar for steps list */
+.steps-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.steps-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.steps-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.steps-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.step-item {
+    background: #f3f4f6;
+    margin-bottom: 0.6rem;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.step-item:hover {
+    background: #ffffff;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.step-name {
+    flex: 1;
+    font-weight: 500;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.step-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.step-title .step-actions button {
+    width: 22px;
+    height: 17px;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.step-actions button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #6b7280;
+    border-radius: 4px;
+    transition: all 0.1s;
+}
+
+.step-actions button:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.step-actions button:disabled {
+    opacity: 0.3;
+    cursor: default;
+    background: transparent !important;
+    color: #9ca3af !important;
+}
+
+/* Specific colors for actions on hover */
+.step-actions button[title="Delete"]:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.editor-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.2rem;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-weight: 500;
+}
+
+#stepCodeInput {
+    flex: 1;
+    background: #f9fafb;
+    color: #111827;
+    font-family: 'Consolas', 'Courier New', monospace;
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    resize: none;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+#stepCodeInput:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: #fff;
+}
+
+#stepNameInput {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    color: #111827;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#stepNameInput:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: #fff;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.btn-primary.small {
+    font-size: 0.85rem;
+    padding: 6px 16px;
+    background: #2563eb;
+    border-radius: 4px;
+    font-weight: 500;
+    color: white;
+}
+
+.btn-primary.small:hover {
+    background: #1d4ed8;
+}
+
+.close-settings,
+.close-editor {
+    color: #9ca3af;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    margin-left: 1rem;
+    transition: color 0.2s;
+}
+
+.close-settings:hover,
+.close-editor:hover {
+    color: #111827;
+}
+
+/* Spacer removal since we use auto margin */
+.spacer {
+    display: none;
+}
+
+
 
 /* Container chính */
 #pipeline-container {
     display: flex;
     flex-direction: column;
     gap: 5px;
+}
+
+.add-step-container {
+    padding: 2px 7px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+.btn-add-main {
+    width: 100%;
+    padding: 12px;
+    background-color: #fff;
+    border: 2px dashed #d1d5db;
+    color: #6b7280;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-add-main span {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.btn-add-main:hover {
+    background-color: #f9fafb;
+    border-color: #3b82f6;
+    color: #3b82f6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-add-main:active {
+    transform: translateY(0);
 }
 
 /* Một hàng (Bước xử lý) */

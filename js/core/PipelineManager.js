@@ -83,10 +83,17 @@ export class PipelineManager {
      */
     executeStep(callback) {
         const nextMats = [];
+        let error = null;
+
         for (let i = 0; i < this.currentMats.length; i++) {
             const src = this.currentMats[i];
-            const dst = callback(src);
-            nextMats.push(dst);
+            try {
+                const dst = callback(src);
+                nextMats.push(dst);
+            } catch (e) {
+                if (!error) error = e; // Capture first error
+                nextMats.push(src.clone()); // Bypass
+            }
         }
 
         // Clean up old mats
@@ -95,7 +102,10 @@ export class PipelineManager {
         // Update state
         this.currentMats = nextMats;
 
-        return this.currentMats;
+        return {
+            mats: this.currentMats,
+            error: error
+        };
     }
 
     getCurrentMats() {

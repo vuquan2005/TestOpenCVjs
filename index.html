@@ -11,7 +11,10 @@
 <body>
     <div class="header-compact">
         <h2>OpenCV Test <span id="status">🟠</span></h2>
-        <button id="btnProcess" class="btn-primary" title="Rerun"><span class="icon-spin">🔄</span></button>
+        <div class="header-buttons">
+            <button id="btnResetProject" class="btn-primary" title="Reset Project to Default">⚠️ Reset</button>
+            <button id="btnProcess" class="btn-primary" title="Rerun"><span class="icon-spin">🔄</span></button>
+        </div>
         <label for="fileInput" class="btn-primary btn-upload">
             <span>📁 Select Images</span>
             <input type="file" id="fileInput" multiple accept="image/*" />
@@ -26,6 +29,12 @@
 
     <div id="pipeline-container"></div>
 
+    <div class="add-step-container">
+        <button id="btnAddNewStepMain" class="btn-add-main" title="Add a new processing step">
+            <span>+</span> Add New Step
+        </button>
+    </div>
+
 
     <!-- Full Screen Result Modal -->
     <div id="resultModal" class="modal">
@@ -38,12 +47,38 @@
         </div>
     </div>
 
+    <!-- Step Editor Modal -->
+    <div id="stepEditorModal" class="modal">
+        <div class="modal-content editor-content">
+            <div class="modal-header">
+                <h2 id="editorTitle">Edit Step</h2>
+                <span class="close-editor">&times;</span>
+            </div>
+            <div class="editor-body">
+                <div class="form-group">
+                    <label>Step Name:</label>
+                    <input type="text" id="stepNameInput" placeholder="e.g. Grayscale" />
+                    <input type="hidden" id="stepIdInput" />
+                </div>
+                <div class="form-group flex-grow">
+                    <label>Function Logic (<code>src</code> is input Mat, return <code>dst</code>):</label>
+                    <div id="monaco-container" style="height: 99%; border: 1px solid #ccc;"></div>
+                    <!-- Hidden textarea to keep logic simple if fallback needed, but we will primarily use Monaco -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnSaveStep" class="btn-primary">Save Step</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Master Scrollbar at Bottom -->
     <div id="master-scrollbar-container">
         <div id="master-scrollbar-spacer"></div>
     </div>
 
-
+    <!-- Load Monaco Loader -->
+    <!-- Monaco Loader removed, will be lazy loaded in SettingsUI.js -->
     <script type="module" src="js/main.js"></script>
     <script async src="opencv.js" type="text/javascript"></script>
 </body>

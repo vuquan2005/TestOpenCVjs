@@ -117,4 +117,4 @@ Cấu hình mặc định trong `js/steps/defaultSteps.js` bao gồm một chu�
 
 ## 📄 Giấy Phép
 
-Dự án này được cấp phép theo Giấy phép MIT - xem file [LICENSE](LICENSE) để biết thêm chi tiết.
+Dự án này được cấp phép theo Giấy phép GNU GPLv3 - xem file [LICENSE](LICENSE) để biết thêm chi tiết.

@@ -4,13 +4,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batch Processing Pipeline</title>
+    <title>TestOpenCVjs - Visual Image Processing Pipeline</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div class="header-compact">
-        <h2>OpenCV Test <span id="status" title="Waiting for OpenCV...">🟠</span></h2>
+        <h2>TestOpenCVjs <span id="status" title="Waiting for OpenCV...">🟠</span></h2>
         <div class="header-buttons">
             <button id="btnResetProject" class="btn-primary" title="Reset Project to Default">⚠️ Reset</button>
             <button id="btnProcess" class="btn-primary" title="Rerun">▶️</button>
@@ -24,6 +24,7 @@
                 <span class="label-text">View Results</span>
                 <span class="icon-mobile">👁️</span>
             </button>
+            <button id="btnAbout" class="btn-primary" title="About">ℹ️</button>
         </div>
     </div>
 
@@ -52,7 +53,7 @@
         <div class="modal-content editor-content">
             <div class="modal-header">
                 <h2 id="editorTitle">Edit Step</h2>
-                <span class="close-editor">&times;</span>
+                <span class="close-modal">&times;</span>
             </div>
             <div class="editor-body">
                 <div class="form-group">
@@ -67,7 +68,48 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button id="btnCancelStep" class="btn-secondary">Cancel</button>
                 <button id="btnSaveStep" class="btn-primary">Save Step</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content about-content">
+            <div class="modal-header">
+                <h2>About</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 20px; line-height: 1.6;">
+                <h3>TestOpenCVjs</h3>
+                <p>Visual Image Processing Pipeline.</p>
+                <p><strong>Features:</strong></p>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li>Batch process multiple images through a customizable pipeline.</li>
+                    <li>Add, remove, reorder, and edit processing steps.</li>
+                    <li>Write custom OpenCV.js code for each step.</li>
+                    <li>Real-time visual feedback for each processing stage.</li>
+                    <li>View final results in a consolidated grid.</li>
+                </ul>
+                <p><strong>How to use:</strong></p>
+                <ol style="padding-left: 20px; margin: 10px 0;">
+                    <li>Upload images using "Select Images" or use the default samples.</li>
+                    <li>Define or modify your pipeline steps in the main view.</li>
+                    <li>The pipeline runs automatically, but you can click (▶️) to rerun manually.</li>
+                </ol>
+                <div
+                    style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; text-align: center; color: #777; font-size: 0.9em;">
+                    <p>Created by <strong>vuquan2005</strong></p>
+                    <p>
+                        <a href="https://github.com/vuquan2005/TestOpenCVjs" target="_blank"
+                            style="color: #007bff; text-decoration: none;">
+                            View on GitHub
+                        </a>
+                    </p>
+                    <p>Released under the <strong>GNU GPLv3 License</strong></p>
+                    <p style="margin-top: 10px; font-size: 0.85em;">Powered by OpenCV.js</p>
+                </div>
             </div>
         </div>
     </div>

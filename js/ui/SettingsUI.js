@@ -11,7 +11,8 @@ export class SettingsUI {
         this.stepNameInput = document.getElementById("stepNameInput");
         this.stepIdInput = document.getElementById("stepIdInput");
         this.btnSaveStep = document.getElementById("btnSaveStep");
-        this.btnCloseEditor = document.querySelector(".close-editor");
+        this.btnCancelStep = document.getElementById("btnCancelStep");
+        this.btnCloseEditor = this.editorModal.querySelector(".close-modal");
 
         this.monacoContainer = document.getElementById("monaco-container");
         this.editor = null;
@@ -63,13 +64,20 @@ export class SettingsUI {
                 theme: "vs-light",
                 minimap: { enabled: false },
                 automaticLayout: true,
+                glyphMargin: false,
+                lineNumbersMinChars: 2,
+                lineDecorationsWidth: 7,
+                folding: false,
             });
         });
     }
 
     initEvents() {
         if (this.btnCloseEditor) {
-            this.btnCloseEditor.onclick = () => (this.editorModal.style.display = "none");
+            this.btnCloseEditor.onclick = () => {
+                this.editorModal.style.display = "none";
+                document.body.classList.remove("modal-open");
+            };
         }
 
         if (this.btnSaveStep) {
@@ -78,10 +86,20 @@ export class SettingsUI {
             };
         }
 
+        if (this.btnCancelStep) {
+            this.btnCancelStep.onclick = () => {
+                this.editorModal.style.display = "none";
+                document.body.classList.remove("modal-open");
+            };
+        }
+
         // Window click to close
         window.addEventListener("click", (event) => {
             // Note: Since we removed settingsModal, we only check editorModal
-            if (event.target == this.editorModal) this.editorModal.style.display = "none";
+            if (event.target == this.editorModal) {
+                this.editorModal.style.display = "none";
+                document.body.classList.remove("modal-open");
+            }
         });
     }
 
@@ -98,6 +116,7 @@ export class SettingsUI {
         }
 
         this.editorModal.style.display = "block";
+        document.body.classList.add("modal-open");
 
         let codeValue = "";
         this.stepIdInput.value = stepId || "";
@@ -163,6 +182,7 @@ src.copyTo(dst);
         }
 
         this.editorModal.style.display = "none";
+        document.body.classList.remove("modal-open");
 
         if (this.onSave) this.onSave();
     }

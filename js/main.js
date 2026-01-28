@@ -124,6 +124,32 @@ btnViewResult.addEventListener("click", () => {
     ui.showFinalResult(pipeline.getCurrentMats(), pipeline.getFileNames());
 });
 
+// About Modal Logic
+const btnAbout = document.getElementById("btnAbout");
+const aboutModal = document.getElementById("aboutModal");
+const closeAbout = aboutModal ? aboutModal.querySelector(".close-modal") : null;
+
+if (btnAbout && aboutModal) {
+    btnAbout.addEventListener("click", () => {
+        aboutModal.style.display = "block";
+        document.body.classList.add("modal-open");
+    });
+
+    if (closeAbout) {
+        closeAbout.addEventListener("click", () => {
+            aboutModal.style.display = "none";
+            document.body.classList.remove("modal-open");
+        });
+    }
+
+    window.addEventListener("click", (event) => {
+        if (event.target === aboutModal) {
+            aboutModal.style.display = "none";
+            document.body.classList.remove("modal-open");
+        }
+    });
+}
+
 const btnAddNewStepMain = document.getElementById("btnAddNewStepMain");
 if (btnAddNewStepMain) {
     btnAddNewStepMain.addEventListener("click", () => {

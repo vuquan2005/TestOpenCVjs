@@ -251,10 +251,16 @@ export class UIManager {
     initModalEvents() {
         const closeBtn = document.querySelector(".close-modal");
         if (closeBtn) {
-            closeBtn.onclick = () => (this.modal.style.display = "none");
+            closeBtn.onclick = () => {
+                this.modal.style.display = "none";
+                document.body.classList.remove("modal-open");
+            };
         }
         window.addEventListener("click", (event) => {
-            if (event.target == this.modal) this.modal.style.display = "none";
+            if (event.target == this.modal) {
+                this.modal.style.display = "none";
+                document.body.classList.remove("modal-open");
+            }
         });
     }
 
@@ -289,5 +295,6 @@ export class UIManager {
         });
 
         this.modal.style.display = "block";
+        document.body.classList.add("modal-open");
     }
 }

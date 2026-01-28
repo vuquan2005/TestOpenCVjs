@@ -436,7 +436,6 @@ body.modal-open #master-scrollbar-container {
     font-size: 0.95em;
     font-weight: 600;
     color: #495057;
-    text-transform: capitalize;
     display: flex;
     align-items: center;
     width: 100%;

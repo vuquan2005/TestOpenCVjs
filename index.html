@@ -56,13 +56,13 @@
                 <span class="close-modal">&times;</span>
             </div>
             <div class="editor-body">
-                <div class="form-group">
-                    <label>Step Name:</label>
-                    <input type="text" id="stepNameInput" placeholder="e.g. Grayscale" />
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <label style="margin-bottom: 0; white-space: nowrap;">Step Name:</label>
+                    <input type="text" id="stepNameInput" placeholder="e.g. Grayscale" style="flex: 1;" />
                     <input type="hidden" id="stepIdInput" />
                 </div>
                 <div class="form-group flex-grow">
-                    <label>Function Logic (<code>src</code> is input Mat, return <code>dst</code>):</label>
+                    <label>Function Logic (<code>src</code> is input Mat, <code>steps[]</code> contains previous results, return <code>dst</code>):</label>
                     <div id="monaco-container" style="height: 99%; border: 1px solid #ccc;"></div>
                     <!-- Hidden textarea to keep logic simple if fallback needed, but we will primarily use Monaco -->
                 </div>

@@ -47,6 +47,8 @@ export class UIManager {
      */
     createStepRow(stepOrTitle, callbacks = null, error = null) {
         let titleText = typeof stepOrTitle === "string" ? stepOrTitle : stepOrTitle.name;
+        let stepIndex = typeof stepOrTitle === "object" ? stepOrTitle.displayIndex : null;
+        let totalSteps = typeof stepOrTitle === "object" ? stepOrTitle.totalSteps : null;
 
         const rowDiv = document.createElement("div");
         rowDiv.className = "step-row";
@@ -58,6 +60,27 @@ export class UIManager {
             const actionsDiv = document.createElement("div");
             actionsDiv.className = "step-actions";
             actionsDiv.style.marginRight = "10px";
+
+            // Clickable index badge for reordering
+            if (stepIndex !== null && callbacks.onMoveToIndex) {
+                const indexBadge = document.createElement("span");
+                indexBadge.className = "step-index-badge";
+                indexBadge.innerText = stepIndex;
+                indexBadge.title = "Click to change position";
+                indexBadge.onclick = (e) => {
+                    e.stopPropagation();
+                    const newIndex = prompt(`Move step to position (1-${totalSteps}):`, stepIndex);
+                    if (newIndex !== null) {
+                        const parsed = parseInt(newIndex, 10);
+                        if (!isNaN(parsed) && parsed >= 1 && parsed <= totalSteps) {
+                            callbacks.onMoveToIndex(parsed);
+                        } else {
+                            alert(`Invalid position. Please enter a number between 1 and ${totalSteps}.`);
+                        }
+                    }
+                };
+                actionsDiv.appendChild(indexBadge);
+            }
 
             const btnEdit = this.createActionButton("✏️", "Edit", callbacks.onEdit);
             actionsDiv.appendChild(btnEdit);
@@ -206,13 +229,21 @@ export class UIManager {
                     onEdit: () => callbacks.onEdit(step.id),
                     onMoveUp: () => callbacks.onMove(stepIndex, -1),
                     onMoveDown: () => callbacks.onMove(stepIndex, 1),
+                    onMoveToIndex: (newIndex) => callbacks.onMoveToIndex(newIndex - 1),
                     onDelete: () => callbacks.onDelete(step.id),
                     canMoveUp: stepIndex > 0,
                     canMoveDown: stepIndex < totalSteps - 1,
                 }
             :   null;
 
-        const track = this.createStepRow(step, actionCallbacks, error);
+        const stepWithIndex = {
+            ...step,
+            name: step.name,
+            displayIndex: stepIndex + 1,
+            totalSteps: totalSteps
+        };
+
+        const track = this.createStepRow(stepWithIndex, actionCallbacks, error);
 
         mats.forEach((mat, i) => {
             const wrapper = document.createElement("div");

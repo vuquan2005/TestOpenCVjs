@@ -264,6 +264,19 @@ body.modal-open #master-scrollbar-container {
     gap: 4px;
 }
 
+.step-index-badge {
+    cursor: pointer;
+    background: #444;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 3px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+    display: inline-block;
+}
+
 .step-title .step-actions button {
     width: 22px;
     height: 17px;
@@ -533,7 +546,7 @@ body.modal-open #master-scrollbar-container {
 .modal-content.editor-content {
     max-width: 900px;
     width: 95%;
-    height: 85vh;
+    height: 90vh;
     display: flex;
     flex-direction: column;
     background: #ffffff;

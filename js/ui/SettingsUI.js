@@ -68,7 +68,7 @@ export class SettingsUI {
                 minimap: { enabled: false },
                 automaticLayout: true,
                 glyphMargin: false,
-                lineNumbersMinChars: 2,
+                lineNumbersMinChars: 3,
                 lineDecorationsWidth: 7,
                 folding: false,
                 fontSize: isMobile ? 12 : 13,

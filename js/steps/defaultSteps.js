@@ -25,6 +25,20 @@ cv.threshold(src, dst, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
         },
     },
     {
+        name: "morph open",
+        // prettier-ignore
+        process: (src) => {
+let kernel = cv.getStructuringElement(
+    cv.MORPH_RECT,
+    new cv.Size(3, 2)
+);
+
+cv.morphologyEx(src, dst, cv.MORPH_OPEN, kernel);
+
+kernel.delete();
+        },
+    },
+    {
         name: "remove small blobs",
         // prettier-ignore
         process: (src) => {

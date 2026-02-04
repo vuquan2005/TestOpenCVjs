@@ -99,6 +99,16 @@ async function runPipeline() {
                     await runPipeline();
                 }
             },
+            onMoveToIndex: async (toIndex) => {
+                const allSteps = stepManager.getSteps();
+                const fromIndex = allSteps.findIndex((s) => s.id === step.id);
+                if (fromIndex !== -1) {
+                    const success = stepManager.moveStepToIndex(fromIndex, toIndex);
+                    if (success) {
+                        await runPipeline();
+                    }
+                }
+            },
             onDelete: async (id) => {
                 if (confirm(`Delete step "${step.name}"?`)) {
                     stepManager.deleteStep(id);

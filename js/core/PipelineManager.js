@@ -6,6 +6,7 @@ export class PipelineManager {
     constructor() {
         this.currentMats = [];
         this.fileNames = [];
+        this.stepHistory = [];
     }
 
     /**
@@ -17,8 +18,16 @@ export class PipelineManager {
                 if (!mat.isDeleted()) mat.delete();
             });
         }
+        if (this.stepHistory) {
+            this.stepHistory.forEach((history) => {
+                history.forEach((mat) => {
+                    if (mat && !mat.isDeleted()) mat.delete();
+                });
+            });
+        }
         this.currentMats = [];
         this.fileNames = [];
+        this.stepHistory = [];
     }
 
     /**
@@ -43,6 +52,7 @@ export class PipelineManager {
             const mat = cv.imread(item.img);
             this.currentMats.push(mat);
             this.fileNames.push(item.name);
+            this.stepHistory.push([mat.clone()]);
         });
 
         return loaded;
@@ -72,6 +82,7 @@ export class PipelineManager {
             const mat = cv.imread(item.img);
             this.currentMats.push(mat);
             this.fileNames.push(item.name);
+            this.stepHistory.push([mat.clone()]);
         });
 
         return loaded;
@@ -89,12 +100,16 @@ export class PipelineManager {
 
         for (let i = 0; i < this.currentMats.length; i++) {
             const src = this.currentMats[i];
+            const history = this.stepHistory[i];
             try {
-                const dst = callback(src);
+                const dst = callback(src, history);
                 nextMats.push(dst);
+                history.push(dst.clone());
             } catch (e) {
                 if (!error) error = e;
-                nextMats.push(src.clone());
+                const cloned = src.clone();
+                nextMats.push(cloned);
+                history.push(cloned.clone());
             }
         }
 
@@ -114,6 +129,33 @@ export class PipelineManager {
      */
     getCurrentMats() {
         return this.currentMats;
+    }
+
+    /**
+     * Returns the step history for all images.
+     * @returns {Array<Array<cv.Mat>>}
+     */
+    getStepHistory() {
+        return this.stepHistory;
+    }
+
+    /**
+     * Resets history to only keep original images.
+     * Called when re-running pipeline from the beginning.
+     */
+    resetHistory() {
+        this.stepHistory.forEach((history, i) => {
+            for (let j = 1; j < history.length; j++) {
+                if (history[j] && !history[j].isDeleted()) {
+                    history[j].delete();
+                }
+            }
+            if (this.currentMats[i] && !this.currentMats[i].isDeleted()) {
+                this.currentMats[i].delete();
+            }
+            this.currentMats[i] = history[0].clone();
+            this.stepHistory[i] = [history[0]];
+        });
     }
 
     /**

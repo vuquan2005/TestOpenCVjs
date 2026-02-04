@@ -68,7 +68,11 @@ export class StepManager {
     /**
      * Converts stored steps into executable functions.
      * Compiles the code string into a function that acts as a sandbox.
-     * @returns {Array} List of steps with a callable `process(src)` method.
+     * Available variables in user code:
+     *   - src: result from previous step
+     *   - steps: array of all previous results (steps[0] = original image)
+     *   - dst: output Mat (pre-initialized)
+     * @returns {Array} List of steps with a callable `process(src, steps)` method.
      */
     getExecutableSteps() {
         return this.steps
@@ -90,14 +94,14 @@ export class StepManager {
                     }
                 `;
                 try {
-                    const func = new Function("src", "cv", wrappedBody);
+                    const func = new Function("src", "steps", "cv", wrappedBody);
                     return {
                         id: s.id,
                         name: s.name,
 
-                        process: (src) => {
+                        process: (src, steps) => {
                             try {
-                                return func(src, cv);
+                                return func(src, steps, cv);
                             } catch (runtimeError) {
                                 console.error(`❌ Error running step [${s.name}]:`, runtimeError);
                                 throw runtimeError;
@@ -108,7 +112,7 @@ export class StepManager {
                     console.error(`❌ Syntax error in step [${s.name}]:`, syntaxError);
                     return {
                         name: `${s.name} (Syntax Error)`,
-                        process: (src) => src.clone(),
+                        process: (src, steps) => src.clone(),
                     };
                 }
             });
@@ -165,5 +169,22 @@ export class StepManager {
             [this.steps[index], this.steps[index + 1]] = [this.steps[index + 1], this.steps[index]];
         }
         this.save();
+    }
+
+    /**
+     * Moves a step from one index to another.
+     * @param {number} fromIndex - Current index of the step (0-based).
+     * @param {number} toIndex - Target index (0-based).
+     * @returns {boolean} True if move was successful.
+     */
+    moveStepToIndex(fromIndex, toIndex) {
+        if (fromIndex < 0 || fromIndex >= this.steps.length) return false;
+        if (toIndex < 0 || toIndex >= this.steps.length) return false;
+        if (fromIndex === toIndex) return false;
+
+        const [step] = this.steps.splice(fromIndex, 1);
+        this.steps.splice(toIndex, 0, step);
+        this.save();
+        return true;
     }
 }

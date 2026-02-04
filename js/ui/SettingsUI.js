@@ -60,6 +60,8 @@ export class SettingsUI {
         };
 
         require(["vs/editor/editor.main"], () => {
+            this.registerCompletions();
+
             const isMobile = window.innerWidth <= 768;
             this.editor = monaco.editor.create(this.monacoContainer, {
                 value: "",
@@ -75,6 +77,49 @@ export class SettingsUI {
                 wordWrap: isMobile ? "on" : "off",
             });
         });
+    }
+
+    /**
+     * Registers TypeScript definitions for OpenCV.js in Monaco Editor.
+     * Loads the opencv.d.ts file and adds it as extra lib for autocomplete.
+     */
+    async registerCompletions() {
+        try {
+            // Fetch the OpenCV.js type definitions
+            const response = await fetch("types/opencv.d.ts");
+            if (!response.ok) {
+                console.warn("Could not load opencv.d.ts for autocomplete");
+                return;
+            }
+            
+            const dtsContent = await response.text();
+            
+            // Configure JavaScript/TypeScript defaults for Monaco
+            monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+                noSemanticValidation: true,
+                noSyntaxValidation: false,
+            });
+            
+            monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+                target: monaco.languages.typescript.ScriptTarget.ES2020,
+                allowNonTsExtensions: true,
+                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+                module: monaco.languages.typescript.ModuleKind.CommonJS,
+                noEmit: true,
+                typeRoots: ["types"],
+            });
+            
+            // Add the OpenCV.js type definitions as extra lib
+            // The second argument is just an identifier, not a real file path
+            monaco.languages.typescript.javascriptDefaults.addExtraLib(
+                dtsContent,
+                "ts:opencv.d.ts"
+            );
+            
+            console.log("OpenCV.js type definitions loaded successfully");
+        } catch (error) {
+            console.warn("Failed to load OpenCV.js type definitions:", error);
+        }
     }
 
     initEvents() {

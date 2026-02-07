@@ -776,19 +776,12 @@ body.modal-open #master-scrollbar-container {
             font-size: 14px;
         }
 
-        #btnResetProject {
-            font-size: 0;
-        }
-
-        #btnResetProject::after {
-            content: "⚠️";
-            font-size: 14px;
-        }
-
+        #btnResetProject .label-text,
         #btnViewResult .label-text {
             display: none;
         }
 
+        #btnResetProject .icon-mobile,
         #btnViewResult .icon-mobile {
             display: inline;
             font-size: 1.4em;

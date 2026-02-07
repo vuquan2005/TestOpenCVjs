@@ -61,7 +61,12 @@
             </div>
             <div class="editor-body">
                 <div class="form-group flex-grow">
-                    <label>Function Logic (<code>src</code> is input Mat, <code>steps[]</code> contains previous results, return <code>dst</code>):</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 5px;">
+                        <button id="btnCommandPalette" class="btn-secondary" title="Command Palette">> Command</button>
+                        <button id="btnCopy" class="btn-secondary" title="Copy to Clipboard">📋</button>
+                        <button id="btnToggleWordWrap" class="btn-secondary" title="Toggle Word Wrap">Wrap</button>
+                        <button id="btnToggleReadOnly" class="btn-secondary" title="Toggle Read-Only">👀</button>
+                    </div>
                     <div id="monaco-container" style="height: 99%; border: 1px solid #ccc;"></div>
                     <!-- Hidden textarea to keep logic simple if fallback needed, but we will primarily use Monaco -->
                 </div>

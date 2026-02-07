@@ -15,6 +15,10 @@ export class SettingsUI {
         this.btnSaveStep = document.getElementById("btnSaveStep");
         this.btnCancelStep = document.getElementById("btnCancelStep");
         this.btnCloseEditor = this.editorModal.querySelector(".close-modal");
+        this.btnCommandPalette = document.getElementById("btnCommandPalette");
+        this.btnCopy = document.getElementById("btnCopy");
+        this.btnToggleReadOnly = document.getElementById("btnToggleReadOnly");
+        this.btnToggleWordWrap = document.getElementById("btnToggleWordWrap");
 
         this.monacoContainer = document.getElementById("monaco-container");
         this.editor = null;
@@ -80,12 +84,13 @@ export class SettingsUI {
                 suggestOnTriggerCharacters: true,
                 wordBasedSuggestions: true,
                 accessibilitySupport: "on",
-                mouseWheelZoom: "on",
             });
 
             this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
                 this.saveStepFromEditor();
             });
+
+            this.updateWordWrapButton(isMobile);
         });
     }
 
@@ -151,6 +156,61 @@ export class SettingsUI {
             };
         }
 
+        if (this.btnCommandPalette) {
+            this.btnCommandPalette.onmousedown = (e) => {
+                e.preventDefault();
+                if (this.editor) {
+                    this.editor.focus();
+                    this.editor.getAction("editor.action.quickCommand").run();
+                }
+            };
+        }
+
+        if (this.btnCopy) {
+            this.btnCopy.onclick = () => {
+                if (this.editor) {
+                    const code = this.editor.getValue();
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalText = this.btnCopy.innerHTML;
+                        this.btnCopy.innerHTML = "✅ Copied!";
+                        setTimeout(() => {
+                            this.btnCopy.innerHTML = originalText;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error("Failed to copy:", err);
+                    });
+                }
+            };
+        }
+
+        if (this.btnToggleReadOnly) {
+            this.btnToggleReadOnly.onclick = () => {
+                if (this.editor) {
+                    const isReadOnly = this.editor.getOption(monaco.editor.EditorOption.readOnly);
+                    const newReadOnlyState = !isReadOnly;
+
+                    this.editor.updateOptions({
+                        readOnly: newReadOnlyState,
+                        domReadOnly: newReadOnlyState, // Prevent focus/keyboard
+                        renderLineHighlight: newReadOnlyState ? 'none' : 'line' // Hide/show visual focus
+                    });
+
+                    this.updateReadOnlyButton(newReadOnlyState);
+                }
+            };
+        }
+
+        if (this.btnToggleWordWrap) {
+            this.btnToggleWordWrap.onclick = () => {
+                if (this.editor) {
+                    const currentWrap = this.editor.getOption(monaco.editor.EditorOption.wordWrap);
+                    const newWrap = currentWrap === "on" ? "off" : "on";
+                    this.editor.updateOptions({ wordWrap: newWrap });
+                    this.updateWordWrapButton(newWrap === "on");
+                }
+            };
+        }
+
         // Window click to close
         window.addEventListener("click", (event) => {
             // Note: Since we removed settingsModal, we only check editorModal
@@ -194,7 +254,7 @@ export class SettingsUI {
             document.getElementById("editorTitle").innerText = "Edit Step";
         } else {
             this.stepNameInput.value = "New Step";
-            codeValue = `
+            codeValue = `// src is input Mat, steps[] contains previous results, return dst
 // cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
 
 src.copyTo(dst);
@@ -204,6 +264,12 @@ src.copyTo(dst);
 
         if (this.editor) {
             this.editor.setValue(codeValue);
+            this.editor.updateOptions({ 
+                readOnly: false,
+                domReadOnly: false,
+                renderLineHighlight: 'line' 
+            });
+            this.updateReadOnlyButton(false);
             // Layout needs to be called after container is visible
             setTimeout(() => this.editor.layout(), 100);
         } else {
@@ -211,11 +277,30 @@ src.copyTo(dst);
                 if (this.editor) {
                     clearInterval(checkEditor);
                     this.editor.setValue(codeValue);
+                    this.editor.updateOptions({ 
+                        readOnly: false,
+                        domReadOnly: false,
+                        renderLineHighlight: 'line'
+                    });
+                    this.updateReadOnlyButton(false);
                     this.editor.layout();
                 }
             }, 100);
 
             setTimeout(() => clearInterval(checkEditor), 10000);
+        }
+    }
+
+    updateReadOnlyButton(isReadOnly) {
+        if (this.btnToggleReadOnly) {
+            this.btnToggleReadOnly.innerHTML = isReadOnly ? "📝" : "👀";
+            this.btnToggleReadOnly.title = isReadOnly ? "Click to Edit" : "Click to set Read-Only";
+        }
+    }
+
+    updateWordWrapButton(isWrapped) {
+        if (this.btnToggleWordWrap) {
+            this.btnToggleWordWrap.innerHTML = isWrapped ? "↩️" : "➡️";
         }
     }
 

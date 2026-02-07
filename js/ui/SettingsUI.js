@@ -19,6 +19,7 @@ export class SettingsUI {
         this.btnCopy = document.getElementById("btnCopy");
         this.btnToggleReadOnly = document.getElementById("btnToggleReadOnly");
         this.btnToggleWordWrap = document.getElementById("btnToggleWordWrap");
+        this.inputLineRange = document.getElementById("inputLineRange");
 
         this.monacoContainer = document.getElementById("monaco-container");
         this.editor = null;
@@ -211,6 +212,16 @@ export class SettingsUI {
             };
         }
 
+        if (this.inputLineRange) {
+            this.inputLineRange.onkeydown = (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.selectLines();
+                }
+            };
+        }
+
         // Window click to close
         window.addEventListener("click", (event) => {
             // Note: Since we removed settingsModal, we only check editorModal
@@ -302,6 +313,54 @@ src.copyTo(dst);
         if (this.btnToggleWordWrap) {
             this.btnToggleWordWrap.innerHTML = isWrapped ? "↩️" : "➡️";
         }
+    }
+
+    selectLines() {
+        if (!this.editor) return;
+
+        const text = this.inputLineRange.value.trim();
+        if (!text) return;
+
+        let startLine = 1;
+        let endLine = 1;
+
+        if (text.includes('-')) {
+            const parts = text.split('-');
+            startLine = parseInt(parts[0], 10);
+            endLine = parseInt(parts[1], 10);
+        } else if (text.includes(' ')) {
+            const parts = text.split(/\s+/);
+            startLine = parseInt(parts[0], 10);
+            endLine = parseInt(parts[1], 10);
+        } else {
+            startLine = parseInt(text, 10);
+            endLine = startLine;
+        }
+
+        if (isNaN(startLine) || isNaN(endLine)) {
+            alert("Invalid line format. Use 'start-end', 'start end' or single line number.");
+            return;
+        }
+
+        const model = this.editor.getModel();
+        const lineCount = model.getLineCount();
+
+        if (startLine < 1) startLine = 1;
+        if (endLine > lineCount) endLine = lineCount;
+        if (startLine > endLine) {
+            // Swap if user entered 10-5
+            const temp = startLine;
+            startLine = endLine;
+            endLine = temp;
+        }
+
+        // Focus and select
+        this.editor.focus();
+        this.editor.revealLineInCenter(startLine);
+        this.editor.setSelection(new monaco.Range(startLine, 1, endLine, model.getLineMaxColumn(endLine)));
+
+        // Clear input after selection
+        this.inputLineRange.value = "";
     }
 
     /**

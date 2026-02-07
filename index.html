@@ -12,9 +12,9 @@
     <div class="header-compact">
         <h2>TestOpenCVjs <span id="status" title="Waiting for OpenCV...">🟠</span></h2>
         <div class="header-buttons">
-            <button id="btnResetProject" class="btn-primary" title="Reset Project to Default">
-                <span class="label-text">Reset</span>
-                <span class="icon-mobile">⚠️</span>
+            <button id="btnSettings" class="btn-primary" title="Settings">
+                <span class="label-text">Settings</span>
+                <span class="icon-mobile">⚙️</span>
             </button>
             <button id="btnProcess" class="btn-primary" title="Rerun">▶️</button>
         </div>
@@ -78,6 +78,39 @@
             <div class="modal-footer">
                 <button id="btnCancelStep" class="btn-secondary">Cancel</button>
                 <button id="btnSaveStep" class="btn-primary">Save Step</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content about-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+                <p style="margin: 0; font-weight: 600;">Application Settings</p>
+                
+                <div style="padding-bottom: 15px;">
+                    <label for="itemSizeSlider" style="font-weight: 500; display: block; margin-bottom: 8px; color: #374151;">
+                        Image Size: <span id="itemSizeValue">120px</span>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.8em; color: #666;">Small</span>
+                        <input type="range" id="itemSizeSlider" min="50" max="500" value="120" style="flex: 1;">
+                        <span style="font-size: 0.8em; color: #666;">Large</span>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid #eee; padding-top: 15px;">
+                    <button id="btnResetProject" class="btn-primary btn-danger" style="width: 100%; justify-content: center;">
+                        ⚠️ Reset Project to Default
+                    </button>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 5px; text-align: center;">
+                        This will delete all custom steps and restore the default pipeline.
+                    </p>
+                </div>
             </div>
         </div>
     </div>

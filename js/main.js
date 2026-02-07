@@ -164,6 +164,55 @@ if (btnAbout && aboutModal) {
     });
 }
 
+// Settings Modal Logic
+const btnSettings = document.getElementById("btnSettings");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettings = settingsModal ? settingsModal.querySelector(".close-modal") : null;
+
+if (btnSettings && settingsModal) {
+    // Image Size Slider Logic
+    const itemSizeSlider = document.getElementById("itemSizeSlider");
+    const itemSizeValue = document.getElementById("itemSizeValue");
+    
+    // Load saved size or default
+    const savedSize = localStorage.getItem("itemHeight");
+    if (savedSize) {
+        document.documentElement.style.setProperty("--item-height", savedSize + "px");
+        if (itemSizeSlider) itemSizeSlider.value = savedSize;
+        if (itemSizeValue) itemSizeValue.innerText = savedSize + "px";
+    } else {
+        // Initialize with default slider value
+        if (itemSizeSlider) {
+            document.documentElement.style.setProperty("--item-height", itemSizeSlider.value + "px");
+        }
+    }
+
+    if (itemSizeSlider && itemSizeValue) {
+        itemSizeSlider.addEventListener("input", (e) => {
+            const val = e.target.value;
+            document.documentElement.style.setProperty("--item-height", val + "px");
+            itemSizeValue.innerText = val + "px";
+            localStorage.setItem("itemHeight", val);
+        });
+    }
+
+    btnSettings.addEventListener("click", () => {
+        ModalManager.open(settingsModal);
+    });
+
+    if (closeSettings) {
+        closeSettings.addEventListener("click", () => {
+            ModalManager.close(settingsModal);
+        });
+    }
+
+    window.addEventListener("click", (event) => {
+        if (event.target === settingsModal) {
+            ModalManager.close(settingsModal);
+        }
+    });
+}
+
 const btnAddNewStepMain = document.getElementById("btnAddNewStepMain");
 if (btnAddNewStepMain) {
     btnAddNewStepMain.addEventListener("click", () => {

@@ -171,6 +171,20 @@ body.modal-open #master-scrollbar-container {
     border-color: transparent;
 }
 
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -508,7 +522,7 @@ body.modal-open #master-scrollbar-container {
 
 .image-item canvas,
 .image-item img {
-    max-height: 120px;
+    height: var(--item-height, 120px);
     width: auto;
     border: 1px solid #eee;
     background: #fff;
@@ -733,7 +747,7 @@ body.modal-open #master-scrollbar-container {
 
     .image-item canvas,
     .image-item img {
-        max-height: 80px;
+        height: var(--item-height, 80px);
     }
 
     .modal-content,
@@ -776,13 +790,11 @@ body.modal-open #master-scrollbar-container {
             font-size: 14px;
         }
 
-        #btnResetProject .label-text,
-        #btnViewResult .label-text {
+        .header-compact .label-text {
             display: none;
         }
 
-        #btnResetProject .icon-mobile,
-        #btnViewResult .icon-mobile {
+        .header-compact .icon-mobile {
             display: inline;
             font-size: 1.4em;
         }

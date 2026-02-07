@@ -71,10 +71,20 @@ export class SettingsUI {
                 automaticLayout: true,
                 glyphMargin: false,
                 lineNumbersMinChars: 3,
-                lineDecorationsWidth: 7,
-                folding: false,
+                lineDecorationsWidth: 0,
                 fontSize: isMobile ? 12 : 13,
                 wordWrap: isMobile ? "on" : "off",
+                parameterHints: {
+                    enabled: true,
+                },
+                suggestOnTriggerCharacters: true,
+                wordBasedSuggestions: true,
+                accessibilitySupport: "on",
+                mouseWheelZoom: "on",
+            });
+
+            this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+                this.saveStepFromEditor();
             });
         });
     }
@@ -91,15 +101,15 @@ export class SettingsUI {
                 console.warn("Could not load opencv.d.ts for autocomplete");
                 return;
             }
-            
+
             const dtsContent = await response.text();
-            
+
             // Configure JavaScript/TypeScript defaults for Monaco
             monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
                 noSemanticValidation: true,
                 noSyntaxValidation: false,
             });
-            
+
             monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
                 target: monaco.languages.typescript.ScriptTarget.ES2020,
                 allowNonTsExtensions: true,
@@ -108,14 +118,14 @@ export class SettingsUI {
                 noEmit: true,
                 typeRoots: ["types"],
             });
-            
+
             // Add the OpenCV.js type definitions as extra lib
             // The second argument is just an identifier, not a real file path
             monaco.languages.typescript.javascriptDefaults.addExtraLib(
                 dtsContent,
-                "ts:opencv.d.ts"
+                "ts:opencv.d.ts",
             );
-            
+
             console.log("OpenCV.js type definitions loaded successfully");
         } catch (error) {
             console.warn("Failed to load OpenCV.js type definitions:", error);
@@ -146,6 +156,16 @@ export class SettingsUI {
             // Note: Since we removed settingsModal, we only check editorModal
             if (event.target == this.editorModal) {
                 ModalManager.close(this.editorModal);
+            }
+        });
+
+        // Ctrl+S listener for the modal (outside editor focus)
+        document.addEventListener("keydown", (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+                if (this.editorModal && this.editorModal.style.display === "block") {
+                    event.preventDefault();
+                    this.saveStepFromEditor();
+                }
             }
         });
     }

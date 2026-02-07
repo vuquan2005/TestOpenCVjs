@@ -12,6 +12,16 @@ export class ModalManager {
                 });
             }
         });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                const openModals = document.querySelectorAll('.modal[style*="display: block"]');
+                if (openModals.length > 0) {
+                    const lastModal = openModals[openModals.length - 1];
+                    this.close(lastModal);
+                }
+            }
+        });
     }
 
     /**

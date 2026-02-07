@@ -53,14 +53,13 @@
         <div class="modal-content editor-content">
             <div class="modal-header">
                 <h2 id="editorTitle">Edit Step</h2>
+                <div class="step-name-wrapper">
+                    <input type="text" id="stepNameInput" placeholder="Step Name" />
+                    <input type="hidden" id="stepIdInput" />
+                </div>
                 <span class="close-modal">&times;</span>
             </div>
             <div class="editor-body">
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <label style="margin-bottom: 0; white-space: nowrap;">Step Name:</label>
-                    <input type="text" id="stepNameInput" placeholder="e.g. Grayscale" style="flex: 1;" />
-                    <input type="hidden" id="stepIdInput" />
-                </div>
                 <div class="form-group flex-grow">
                     <label>Function Logic (<code>src</code> is input Mat, <code>steps[]</code> contains previous results, return <code>dst</code>):</label>
                     <div id="monaco-container" style="height: 99%; border: 1px solid #ccc;"></div>

@@ -58,8 +58,6 @@ const fileInput = document.getElementById("fileInput");
 const btnViewResult = document.getElementById("btnViewResult");
 const statusIcon = document.getElementById("status");
 
-// Reset Project logic moved to SettingsUI
-
 /**
  * Main execution function.
  * 1. Checks OpenCV status.

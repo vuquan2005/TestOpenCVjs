@@ -1,41 +1,25 @@
-export const steps = [
-    {
-        name: "hsv",
-        // prettier-ignore
-        process: (src) => {
+/* STEP[1]: hsv */
 cv.cvtColor(src, dst, cv.COLOR_RGB2HSV);
-        },
-    },
-    {
-        name: "get channel s",
-        // prettier-ignore
-        process: (src) => {
+/* STEP_END */
+
+/* STEP[2]: get channel s */
 let channels = new cv.MatVector();
 cv.split(src, channels);
 dst = channels.get(1);
 channels.delete();
-        },
-    },
-    {
-        name: "otsu",
-        // prettier-ignore
-        process: (src) => {
+/* STEP_END */
+
+/* STEP[3]: otsu */
 cv.threshold(src, dst, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-        },
-    },
-    {
-        name: "morph open",
-        // prettier-ignore
-        process: (src) => {
+/* STEP_END */
+
+/* STEP[4]: morph open */
 let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(2, 2));
 cv.morphologyEx(src, dst, cv.MORPH_OPEN, kernel);
 kernel.delete();
-        },
-    },
-    {
-        name: "save 5 big blobs",
-        // prettier-ignore
-        process: (src, steps) => {
+/* STEP_END */
+
+/* STEP[5]: save 5 big blobs */
 let contours = new cv.MatVector();
 let hierarchy = new cv.Mat();
 
@@ -107,25 +91,17 @@ src.copyTo(dst, tempMask);
 tempMask.delete();
 contours.delete();
 hierarchy.delete();
-        },
-    },
-    {
-        name: "morph close",
-        // prettier-ignore
-        process: (src) => {
-let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 2));
-cv.morphologyEx(src, dst, cv.MORPH_CLOSE, kernel);
-kernel.delete();
-        },
-    },
-    {
-        name: "save s channel data",
-        // prettier-ignore
-        process: (src, steps) => {
+/* STEP_END */
+
+/* STEP[6]: morph close */
+let kernel1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 2));
+cv.morphologyEx(src, dst, cv.MORPH_CLOSE, kernel1);
+kernel1.delete();
+/* STEP_END */
+
+/* STEP[7]: save s channel data */
 // Lấy S channel gốc (steps[2]), dùng mask hiện tại (src) để cắt
 let graySource = steps[2];
 dst.setTo(new cv.Scalar(0));
 graySource.copyTo(dst, src);
-        },
-    },
-];
+/* STEP_END */

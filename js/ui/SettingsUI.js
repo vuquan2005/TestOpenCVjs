@@ -1,398 +1,199 @@
-/**
- * UI Manager for the Settings functionality.
- * Handles the step editor modal, Monaco editor integration, and saving changes to StepManager.
- */
 import { ModalManager } from "./ModalManager.js";
 
 export class SettingsUI {
-    constructor(stepManager, onSave) {
+    constructor(stepManager, onImportSuccess) {
         this.stepManager = stepManager;
-        this.onSave = onSave;
+        this.onImportSuccess = onImportSuccess;
+        this.modal = document.getElementById("settingsModal");
+        this.btnClose = this.modal ? this.modal.querySelector(".close-modal") : null;
+        this.btnResetProject = document.getElementById("btnResetProject");
+        this.itemSizeSlider = document.getElementById("itemSizeSlider");
+        this.itemSizeValue = document.getElementById("itemSizeValue");
+        
+        this.btnCopySteps = document.getElementById("btnCopySteps");
+        this.btnImportSteps = document.getElementById("btnImportSteps");
+        this.stepsArea = document.getElementById("stepsArea");
 
-        this.editorModal = document.getElementById("stepEditorModal");
-        this.stepNameInput = document.getElementById("stepNameInput");
-        this.stepIdInput = document.getElementById("stepIdInput");
-        this.btnSaveStep = document.getElementById("btnSaveStep");
-        this.btnCancelStep = document.getElementById("btnCancelStep");
-        this.btnCloseEditor = this.editorModal.querySelector(".close-modal");
-        this.btnCommandPalette = document.getElementById("btnCommandPalette");
-        this.btnCopy = document.getElementById("btnCopy");
-        this.btnToggleReadOnly = document.getElementById("btnToggleReadOnly");
-        this.btnToggleWordWrap = document.getElementById("btnToggleWordWrap");
-        this.inputLineRange = document.getElementById("inputLineRange");
-
-        this.monacoContainer = document.getElementById("monaco-container");
-        this.editor = null;
-
+        this.initSettings();
         this.initEvents();
-        // Monaco will be initialized on first open
-        this.monacoLoaded = false;
     }
 
-    /**
-     * Lazily loads the Monaco Editor from CDN.
-     */
-    loadMonaco() {
-        if (this.monacoLoaded) return;
-        this.monacoLoaded = true;
-
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js";
-        script.async = true;
-        script.onload = () => {
-            this.configureAndLoadMonaco();
-        };
-        document.body.appendChild(script);
-    }
-
-    /**
-     * Configures the Monaco environment and initializes the editor instance.
-     */
-    configureAndLoadMonaco() {
-        require.config({
-            paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs" },
-        });
-
-        // Proxy worker to avoid cross-origin issues with CDN
-        window.MonacoEnvironment = {
-            getWorkerUrl: function (workerId, label) {
-                return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                    self.MonacoEnvironment = {
-                        baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/'
-                    };
-                    importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/worker/workerMain.js');`)}`;
-            },
-        };
-
-        require(["vs/editor/editor.main"], () => {
-            this.registerCompletions();
-
-            const isMobile = window.innerWidth <= 768;
-            this.editor = monaco.editor.create(this.monacoContainer, {
-                value: "",
-                language: "javascript",
-                theme: "vs-light",
-                minimap: { enabled: false },
-                automaticLayout: true,
-                glyphMargin: false,
-                lineNumbersMinChars: 3,
-                lineDecorationsWidth: 0,
-                fontSize: isMobile ? 12 : 13,
-                wordWrap: isMobile ? "on" : "off",
-                parameterHints: {
-                    enabled: true,
-                },
-                suggestOnTriggerCharacters: true,
-                wordBasedSuggestions: true,
-                accessibilitySupport: "on",
-            });
-
-            this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-                this.saveStepFromEditor();
-            });
-
-            this.updateWordWrapButton(isMobile);
-        });
-    }
-
-    /**
-     * Registers TypeScript definitions for OpenCV.js in Monaco Editor.
-     * Loads the opencv.d.ts file and adds it as extra lib for autocomplete.
-     */
-    async registerCompletions() {
-        try {
-            // Fetch the OpenCV.js type definitions
-            const response = await fetch("types/opencv.d.ts");
-            if (!response.ok) {
-                console.warn("Could not load opencv.d.ts for autocomplete");
-                return;
-            }
-
-            const dtsContent = await response.text();
-
-            // Configure JavaScript/TypeScript defaults for Monaco
-            monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-                noSemanticValidation: true,
-                noSyntaxValidation: false,
-            });
-
-            monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-                target: monaco.languages.typescript.ScriptTarget.ES2020,
-                allowNonTsExtensions: true,
-                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-                module: monaco.languages.typescript.ModuleKind.CommonJS,
-                noEmit: true,
-                typeRoots: ["types"],
-            });
-
-            // Add the OpenCV.js type definitions as extra lib
-            // The second argument is just an identifier, not a real file path
-            monaco.languages.typescript.javascriptDefaults.addExtraLib(
-                dtsContent,
-                "ts:opencv.d.ts",
-            );
-
-            console.log("OpenCV.js type definitions loaded successfully");
-        } catch (error) {
-            console.warn("Failed to load OpenCV.js type definitions:", error);
+    initSettings() {
+        // Load saved size or default
+        const savedSize = localStorage.getItem("itemHeight");
+        if (savedSize) {
+            document.documentElement.style.setProperty("--item-height", savedSize + "px");
+            if (this.itemSizeSlider) this.itemSizeSlider.value = savedSize;
+            if (this.itemSizeValue) this.itemSizeValue.innerText = savedSize + "px";
+        } else if (this.itemSizeSlider) {
+             document.documentElement.style.setProperty("--item-height", this.itemSizeSlider.value + "px");
         }
     }
 
     initEvents() {
-        if (this.btnCloseEditor) {
-            this.btnCloseEditor.onclick = () => {
-                ModalManager.close(this.editorModal);
+        if (this.btnClose) {
+            this.btnClose.onclick = () => {
+                ModalManager.close(this.modal);
             };
         }
 
-        if (this.btnSaveStep) {
-            this.btnSaveStep.onclick = () => {
-                this.saveStepFromEditor();
-            };
-        }
-
-        if (this.btnCancelStep) {
-            this.btnCancelStep.onclick = () => {
-                ModalManager.close(this.editorModal);
-            };
-        }
-
-        if (this.btnCommandPalette) {
-            this.btnCommandPalette.onmousedown = (e) => {
-                e.preventDefault();
-                if (this.editor) {
-                    this.editor.focus();
-                    this.editor.getAction("editor.action.quickCommand").run();
-                }
-            };
-        }
-
-        if (this.btnCopy) {
-            this.btnCopy.onclick = () => {
-                if (this.editor) {
-                    const code = this.editor.getValue();
-                    navigator.clipboard.writeText(code).then(() => {
-                        const originalText = this.btnCopy.innerHTML;
-                        this.btnCopy.innerHTML = "✅ Copied!";
-                        setTimeout(() => {
-                            this.btnCopy.innerHTML = originalText;
-                        }, 2000);
-                    }).catch(err => {
-                        console.error("Failed to copy:", err);
-                    });
-                }
-            };
-        }
-
-        if (this.btnToggleReadOnly) {
-            this.btnToggleReadOnly.onclick = () => {
-                if (this.editor) {
-                    const isReadOnly = this.editor.getOption(monaco.editor.EditorOption.readOnly);
-                    const newReadOnlyState = !isReadOnly;
-
-                    this.editor.updateOptions({
-                        readOnly: newReadOnlyState,
-                        domReadOnly: newReadOnlyState, // Prevent focus/keyboard
-                        renderLineHighlight: newReadOnlyState ? 'none' : 'line' // Hide/show visual focus
-                    });
-
-                    this.updateReadOnlyButton(newReadOnlyState);
-                }
-            };
-        }
-
-        if (this.btnToggleWordWrap) {
-            this.btnToggleWordWrap.onclick = () => {
-                if (this.editor) {
-                    const currentWrap = this.editor.getOption(monaco.editor.EditorOption.wordWrap);
-                    const newWrap = currentWrap === "on" ? "off" : "on";
-                    this.editor.updateOptions({ wordWrap: newWrap });
-                    this.updateWordWrapButton(newWrap === "on");
-                }
-            };
-        }
-
-        if (this.inputLineRange) {
-            this.inputLineRange.onkeydown = (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.selectLines();
-                }
-            };
-        }
-
-        // Window click to close
         window.addEventListener("click", (event) => {
-            // Note: Since we removed settingsModal, we only check editorModal
-            if (event.target == this.editorModal) {
-                ModalManager.close(this.editorModal);
+            if (event.target === this.modal) {
+                ModalManager.close(this.modal);
             }
         });
 
-        // Ctrl+S listener for the modal (outside editor focus)
-        document.addEventListener("keydown", (event) => {
-            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
-                if (this.editorModal && this.editorModal.style.display === "block") {
-                    event.preventDefault();
-                    this.saveStepFromEditor();
-                }
-            }
-        });
-    }
-
-    // open() method removed as it opened the Settings List Modal.
-    // Uses openEditor() directly.
-
-    /**
-     * Opens the Step Editor Modal.
-     * @param {string|null} stepId - ID of the step to edit, or null to create a new step.
-     */
-    openEditor(stepId = null) {
-        if (!this.monacoLoaded) {
-            this.loadMonaco();
-        }
-
-        ModalManager.open(this.editorModal);
-
-        let codeValue = "";
-        this.stepIdInput.value = stepId || "";
-
-        if (stepId) {
-            const step = this.stepManager.getSteps().find((s) => s.id === stepId);
-            this.stepNameInput.value = step.name;
-            codeValue = step.code;
-            document.getElementById("editorTitle").innerText = "Edit Step";
-        } else {
-            this.stepNameInput.value = "New Step";
-            codeValue = `// src is input Mat, steps[] contains previous results, return dst
-// cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-
-src.copyTo(dst);
-`;
-            document.getElementById("editorTitle").innerText = "Add Step";
-        }
-
-        if (this.editor) {
-            this.editor.setValue(codeValue);
-            this.editor.updateOptions({ 
-                readOnly: false,
-                domReadOnly: false,
-                renderLineHighlight: 'line' 
+        if (this.itemSizeSlider && this.itemSizeValue) {
+            this.itemSizeSlider.addEventListener("input", (e) => {
+                const val = e.target.value;
+                document.documentElement.style.setProperty("--item-height", val + "px");
+                this.itemSizeValue.innerText = val + "px";
+                localStorage.setItem("itemHeight", val);
             });
-            this.updateReadOnlyButton(false);
-            // Layout needs to be called after container is visible
-            setTimeout(() => this.editor.layout(), 100);
-        } else {
-            const checkEditor = setInterval(() => {
-                if (this.editor) {
-                    clearInterval(checkEditor);
-                    this.editor.setValue(codeValue);
-                    this.editor.updateOptions({ 
-                        readOnly: false,
-                        domReadOnly: false,
-                        renderLineHighlight: 'line'
-                    });
-                    this.updateReadOnlyButton(false);
-                    this.editor.layout();
+        }
+
+        if (this.btnResetProject) {
+            this.btnResetProject.onclick = () => {
+                if (
+                    confirm(
+                        "Are you sure you want to reset to default steps? All custom changes will be lost.",
+                    )
+                ) {
+                    localStorage.removeItem(this.stepManager.STORAGE_KEY);
+                    location.reload();
                 }
-            }, 100);
-
-            setTimeout(() => clearInterval(checkEditor), 10000);
-        }
-    }
-
-    updateReadOnlyButton(isReadOnly) {
-        if (this.btnToggleReadOnly) {
-            this.btnToggleReadOnly.innerHTML = isReadOnly ? "📝" : "👀";
-            this.btnToggleReadOnly.title = isReadOnly ? "Click to Edit" : "Click to set Read-Only";
-        }
-    }
-
-    updateWordWrapButton(isWrapped) {
-        if (this.btnToggleWordWrap) {
-            this.btnToggleWordWrap.innerHTML = isWrapped ? "↩️" : "➡️";
-        }
-    }
-
-    selectLines() {
-        if (!this.editor) return;
-
-        const text = this.inputLineRange.value.trim();
-        if (!text) return;
-
-        let startLine = 1;
-        let endLine = 1;
-
-        if (text.includes('-')) {
-            const parts = text.split('-');
-            startLine = parseInt(parts[0], 10);
-            endLine = parseInt(parts[1], 10);
-        } else if (text.includes(' ')) {
-            const parts = text.split(/\s+/);
-            startLine = parseInt(parts[0], 10);
-            endLine = parseInt(parts[1], 10);
-        } else {
-            startLine = parseInt(text, 10);
-            endLine = startLine;
+            };
         }
 
-        if (isNaN(startLine) || isNaN(endLine)) {
-            alert("Invalid line format. Use 'start-end', 'start end' or single line number.");
-            return;
+        if (this.btnCopySteps) {
+            this.btnCopySteps.onclick = () => {
+                const text = this.getFormattedSteps();
+                
+                if (this.stepsArea) {
+                    this.stepsArea.value = text;
+                }
+
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = this.btnCopySteps.innerText; // Use innerText to preserve icon if any, but simplified here
+                    // Actually innerHTML is safer if we have icons
+                    const originalHTML = this.btnCopySteps.innerHTML;
+                    this.btnCopySteps.innerHTML = "✅ Copied!";
+                    setTimeout(() => {
+                        this.btnCopySteps.innerHTML = originalHTML;
+                    }, 2000);
+                }).catch(err => {
+                    console.error("Failed to copy:", err);
+                    alert("Failed to copy to clipboard");
+                });
+            };
         }
 
-        const model = this.editor.getModel();
-        const lineCount = model.getLineCount();
+        if (this.btnImportSteps) {
+            this.btnImportSteps.onclick = () => {
+                const inputText = this.stepsArea ? this.stepsArea.value.trim() : "";
+                if (!inputText) {
+                    alert("Please paste steps in the textarea first.");
+                    return;
+                }
 
-        if (startLine < 1) startLine = 1;
-        if (endLine > lineCount) endLine = lineCount;
-        if (startLine > endLine) {
-            // Swap if user entered 10-5
-            const temp = startLine;
-            startLine = endLine;
-            endLine = temp;
+                let importedSteps = null;
+
+                // Try to detect format and parse
+                if (inputText.includes("/* STEP_START:") || inputText.includes("/* STEP[")) {
+                    // Parse JS format with markers
+                    importedSteps = this.parseStepsFromText(inputText);
+                } else if (inputText.startsWith("[")) {
+                    // Try JSON format
+                    try {
+                        importedSteps = JSON.parse(inputText);
+                    } catch (e) {
+                        alert("Invalid JSON format: " + e.message);
+                        return;
+                    }
+                } else {
+                    alert("Unknown format. Use the exported JS format or JSON array.");
+                    return;
+                }
+
+                if (!importedSteps || importedSteps.length === 0) {
+                    alert("No valid steps found in the input.");
+                    return;
+                }
+
+                // Validate each step has required fields
+                for (const step of importedSteps) {
+                    if (!step.name || !step.code) {
+                        alert("Invalid step format: each step must have 'name' and 'code' fields.");
+                        return;
+                    }
+                }
+
+                if (!confirm(`Import ${importedSteps.length} steps? This will replace all current steps.`)) {
+                    return;
+                }
+
+                // Import the steps
+                this.stepManager.importSteps(importedSteps);
+                
+                // Update the area with new steps
+                if (this.stepsArea) {
+                    this.stepsArea.value = this.getFormattedSteps();
+                }
+
+                const originalHTML = this.btnImportSteps.innerHTML;
+                this.btnImportSteps.innerHTML = "✅ Imported!";
+                setTimeout(() => {
+                    this.btnImportSteps.innerHTML = originalHTML;
+                }, 2000);
+
+                if (this.onImportSuccess) {
+                    this.onImportSuccess();
+                }
+            };
         }
-
-        // Focus and select
-        this.editor.focus();
-        this.editor.revealLineInCenter(startLine);
-        this.editor.setSelection(new monaco.Range(startLine, 1, endLine, model.getLineMaxColumn(endLine)));
-
-        // Clear input after selection
-        this.inputLineRange.value = "";
     }
 
     /**
-     * Saves the step currently in the editor.
-     * Validates input names and code syntax before saving.
+     * Formats steps for export using JS-based format with markers.
+     * Format:
+     * /* STEP[0]: Step Name *\/
+     * code here...
+     * /* STEP_END *\/
      */
-    saveStepFromEditor() {
-        const id = this.stepIdInput.value;
-        const name = this.stepNameInput.value;
+    getFormattedSteps() {
+        const steps = this.stepManager.getSteps();
+        return steps.map((s, index) => 
+            `/* STEP[${index + 1}]: ${s.name} */\n${s.code}\n/* STEP_END */`
+        ).join("\n\n");
+    }
 
-        const code = this.editor ? this.editor.getValue() : "";
-
-        if (!name || !code) {
-            alert("Name and Code are required!");
-            return;
+    /**
+     * Parses steps from the JS-based format with STEP[n]/STEP_END markers.
+     * @param {string} text - The text to parse.
+     * @returns {Array} Array of step objects with name and code.
+     */
+    parseStepsFromText(text) {
+        const steps = [];
+        // Match both old format (STEP_START) and new format (STEP[n])
+        const regex = /\/\* (?:STEP_START|STEP\[\d+\]):\s*(.+?)\s*\*\/([\s\S]*?)\/\* STEP_END \*\//g;
+        
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            const name = match[1].trim();
+            const code = match[2].trim();
+            if (name && code) {
+                steps.push({ name, code, enabled: true });
+            }
         }
+        
+        return steps;
+    }
 
-        try {
-            const F = new Function("src", "cv", code);
-        } catch (e) {
-            alert("Syntax Error in code: " + e.message);
-            return;
+    open() {
+        ModalManager.open(this.modal);
+        // Pre-fill the text area with current steps when opening
+        if (this.stepsArea) {
+            this.stepsArea.value = this.getFormattedSteps();
         }
-
-        if (id) {
-            this.stepManager.updateStep(id, name, code);
-        } else {
-            this.stepManager.addStep(name, code);
-        }
-
-        ModalManager.close(this.editorModal);
-
-        if (this.onSave) this.onSave();
     }
 }

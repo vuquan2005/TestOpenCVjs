@@ -103,6 +103,24 @@
                     </div>
                 </div>
 
+                <div style="padding-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                     <label style="font-weight: 500; display: block; margin-bottom: 8px; color: #374151;">
+                        Import / Export Steps
+                    </label>
+                    <textarea id="stepsArea" rows="8" style="width: 100%; font-family: monospace; font-size: 0.8em; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;" placeholder="Steps will appear here. Edit or paste new steps to import..."></textarea>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btnCopySteps" class="btn-primary" style="flex: 1; justify-content: center;">
+                            📋 Copy
+                        </button>
+                        <button id="btnImportSteps" class="btn-primary" style="flex: 1; justify-content: center;">
+                            📥 Import
+                        </button>
+                    </div>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 5px; text-align: center;">
+                        Import will replace all current steps.
+                    </p>
+                </div>
+
                 <div style="border-top: 1px solid #eee; padding-top: 15px;">
                     <button id="btnResetProject" class="btn-primary btn-danger" style="width: 100%; justify-content: center;">
                         ⚠️ Reset Project to Default

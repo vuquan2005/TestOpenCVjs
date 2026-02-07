@@ -1,7 +1,7 @@
 import { PipelineManager } from "./core/PipelineManager.js";
 import { UIManager } from "./ui/UIManager.js";
-import { steps as defaultSteps } from "./steps/defaultSteps.js";
 import { StepManager } from "./core/StepManager.js";
+import { StepEditorUI } from "./ui/StepEditorUI.js";
 import { SettingsUI } from "./ui/SettingsUI.js";
 import { ModalManager } from "./ui/ModalManager.js";
 
@@ -22,30 +22,43 @@ const DEFAULT_IMAGES = [
 
 const pipeline = new PipelineManager();
 const ui = new UIManager();
-const stepManager = new StepManager(defaultSteps);
+
+// Fetch default steps text and initialize
+let stepManager;
+let stepEditorUI;
+let appSettingsUI;
+
+async function initStepManager() {
+    let defaultStepsText = "";
+    try {
+        const response = await fetch("js/steps/defaultSteps.txt");
+        if (response.ok) {
+            defaultStepsText = await response.text();
+        }
+    } catch (e) {
+        console.warn("Could not load defaultSteps.txt:", e);
+    }
+    
+    stepManager = new StepManager(defaultStepsText);
+    
+    stepEditorUI = new StepEditorUI(stepManager, () => {
+        runPipeline();
+    });
+    
+    appSettingsUI = new SettingsUI(stepManager, () => {
+        runPipeline();
+    });
+}
+
+// Initialize and continue setup
+initStepManager();
 
 const btnProcess = document.getElementById("btnProcess");
 const fileInput = document.getElementById("fileInput");
 const btnViewResult = document.getElementById("btnViewResult");
 const statusIcon = document.getElementById("status");
 
-const settingsUI = new SettingsUI(stepManager, () => {
-    runPipeline();
-});
-
-const btnResetProject = document.getElementById("btnResetProject");
-if (btnResetProject) {
-    btnResetProject.addEventListener("click", () => {
-        if (
-            confirm(
-                "Are you sure you want to reset to default steps? All custom changes will be lost.",
-            )
-        ) {
-            localStorage.removeItem(stepManager.STORAGE_KEY);
-            location.reload();
-        }
-    });
-}
+// Reset Project logic moved to SettingsUI
 
 /**
  * Main execution function.
@@ -55,6 +68,11 @@ if (btnResetProject) {
  * 4. Iterates through steps, executing them and rendering results.
  */
 async function runPipeline() {
+    if (!stepManager) {
+        console.warn("StepManager not ready yet");
+        return;
+    }
+    
     if (typeof cv === "undefined" || !cv.getBuildInformation) {
         console.warn("OpenCV not ready yet");
         return;
@@ -92,7 +110,7 @@ async function runPipeline() {
 
         const actions = {
             onEdit: (id) => {
-                settingsUI.openEditor(id);
+                stepEditorUI.openEditor(id);
             },
             onMove: async (vizIndex, dir) => {
                 const allSteps = stepManager.getSteps();
@@ -166,57 +184,16 @@ if (btnAbout && aboutModal) {
 
 // Settings Modal Logic
 const btnSettings = document.getElementById("btnSettings");
-const settingsModal = document.getElementById("settingsModal");
-const closeSettings = settingsModal ? settingsModal.querySelector(".close-modal") : null;
-
-if (btnSettings && settingsModal) {
-    // Image Size Slider Logic
-    const itemSizeSlider = document.getElementById("itemSizeSlider");
-    const itemSizeValue = document.getElementById("itemSizeValue");
-    
-    // Load saved size or default
-    const savedSize = localStorage.getItem("itemHeight");
-    if (savedSize) {
-        document.documentElement.style.setProperty("--item-height", savedSize + "px");
-        if (itemSizeSlider) itemSizeSlider.value = savedSize;
-        if (itemSizeValue) itemSizeValue.innerText = savedSize + "px";
-    } else {
-        // Initialize with default slider value
-        if (itemSizeSlider) {
-            document.documentElement.style.setProperty("--item-height", itemSizeSlider.value + "px");
-        }
-    }
-
-    if (itemSizeSlider && itemSizeValue) {
-        itemSizeSlider.addEventListener("input", (e) => {
-            const val = e.target.value;
-            document.documentElement.style.setProperty("--item-height", val + "px");
-            itemSizeValue.innerText = val + "px";
-            localStorage.setItem("itemHeight", val);
-        });
-    }
-
+if (btnSettings) {
     btnSettings.addEventListener("click", () => {
-        ModalManager.open(settingsModal);
-    });
-
-    if (closeSettings) {
-        closeSettings.addEventListener("click", () => {
-            ModalManager.close(settingsModal);
-        });
-    }
-
-    window.addEventListener("click", (event) => {
-        if (event.target === settingsModal) {
-            ModalManager.close(settingsModal);
-        }
+        if (appSettingsUI) appSettingsUI.open();
     });
 }
 
 const btnAddNewStepMain = document.getElementById("btnAddNewStepMain");
 if (btnAddNewStepMain) {
     btnAddNewStepMain.addEventListener("click", () => {
-        settingsUI.openEditor();
+        if (stepEditorUI) stepEditorUI.openEditor();
     });
 }
 

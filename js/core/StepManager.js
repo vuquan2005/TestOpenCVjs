@@ -3,51 +3,54 @@
  * Handles loading from localStorage, saving, and compiling user code into executable functions.
  */
 export class StepManager {
-    constructor(defaultSteps = []) {
+    constructor(defaultStepsText = "") {
         this.STORAGE_KEY = "opencv_pipeline_steps";
-        this.steps = this.loadSteps(defaultSteps);
+        this.defaultStepsText = defaultStepsText;
+        this.steps = this.loadSteps();
     }
 
     /**
      * Loads steps from localStorage or falls back to defaults.
-     * @param {Array} defaultSteps - List of default steps to use if storage is empty.
      * @returns {Array} List of step objects.
      */
-    loadSteps(defaultSteps) {
+    loadSteps() {
         const stored = localStorage.getItem(this.STORAGE_KEY);
         if (stored) {
             try {
                 return JSON.parse(stored);
             } catch (e) {
                 console.error("Failed to parse stored steps", e);
-                return this.initFromDefaults(defaultSteps);
+                return this.parseStepsFromText(this.defaultStepsText);
             }
         }
-        return this.initFromDefaults(defaultSteps);
+        return this.parseStepsFromText(this.defaultStepsText);
     }
 
     /**
-     * Initializes steps from the default list, converting function bodies to strings.
-     * @param {Array} defaultSteps
-     * @returns {Array} List of serializable step objects.
+     * Parses steps from the JS-based format with STEP[n]/STEP_END markers.
+     * @param {string} text - The text to parse.
+     * @returns {Array} Array of step objects with name and code.
      */
-    initFromDefaults(defaultSteps) {
-        // Convert existing function-based steps to serializable format
-        return defaultSteps.map((step) => {
-            let code = step.process.toString();
-            // Try to extract body between { and }
-            const bodyStart = code.indexOf("{");
-            const bodyEnd = code.lastIndexOf("}");
-            if (bodyStart !== -1 && bodyEnd !== -1) {
-                code = code.substring(bodyStart + 1, bodyEnd).trim();
+    parseStepsFromText(text) {
+        const steps = [];
+        // Match both old format (STEP_START) and new format (STEP[n])
+        const regex = /\/\* (?:STEP_START|STEP\[\d+\]):\s*(.+?)\s*\*\/([\s\S]*?)\/\* STEP_END \*\//g;
+        
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            const name = match[1].trim();
+            const code = match[2].trim();
+            if (name && code) {
+                steps.push({
+                    id: crypto.randomUUID(),
+                    name,
+                    code,
+                    enabled: true
+                });
             }
-            return {
-                id: crypto.randomUUID(),
-                name: step.name,
-                code: code,
-                enabled: true,
-            };
-        });
+        }
+        
+        return steps;
     }
 
     /**
@@ -55,6 +58,21 @@ export class StepManager {
      */
     save() {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.steps));
+    }
+
+    /**
+     * Imports steps from an array of step objects.
+     * Each step should have 'name' and 'code' fields.
+     * @param {Array} importedSteps - Array of step objects to import.
+     */
+    importSteps(importedSteps) {
+        this.steps = importedSteps.map(step => ({
+            id: step.id || crypto.randomUUID(),
+            name: step.name,
+            code: step.code,
+            enabled: step.enabled !== undefined ? step.enabled : true,
+        }));
+        this.save();
     }
 
     /**
